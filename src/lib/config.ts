@@ -7,7 +7,7 @@
  * Change PRODUCTION_SITE_URL if you deploy under a different domain.
  */
 
-const PRODUCTION_SITE_URL = 'https://jsonyamltools.com';
+const PRODUCTION_SITE_URL = 'https://jsonyaml.tools';
 
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ||

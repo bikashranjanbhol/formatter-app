@@ -14,13 +14,18 @@ export function Header() {
   const isActive = (href: string) => pathname === href;
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90">
+    <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur-md dark:border-slate-800/70 dark:bg-slate-950/80">
       <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
-          <span aria-hidden className="text-lg">
-            🧰
+        <Link href="/" className="group flex items-center gap-2 font-semibold">
+          <span
+            aria-hidden
+            className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 font-mono text-sm text-white shadow-sm shadow-brand-600/30 transition-transform group-hover:scale-105"
+          >
+            {'{}'}
           </span>
-          <span className="hidden sm:inline">{SITE_NAME}</span>
+          <span className="hidden bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent dark:from-white dark:to-slate-400 sm:inline">
+            {SITE_NAME}
+          </span>
           <span className="sm:hidden">Workbench</span>
         </Link>
 

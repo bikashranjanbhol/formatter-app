@@ -33,7 +33,7 @@ test.describe('JSON & YAML Workbench smoke tests', () => {
 
   test('YAML to JSON conversion warns about lossy features', async ({ page }) => {
     await page.goto('/yaml-to-json');
-    await page.getByRole('button', { name: 'Sample' }).click();
+    await page.getByRole('button', { name: /sample/i }).click();
     await page.getByRole('button', { name: /Convert to JSON/ }).click();
     // The sample uses anchors/aliases and comments, so warnings should show.
     await expect(page.getByText(/warning/i).first()).toBeVisible();

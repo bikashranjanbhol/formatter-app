@@ -10,6 +10,19 @@ import { ErrorList } from '../validation/ErrorList';
 import { TreeView } from '../tree/TreeView';
 import { PrivacyIndicator } from '../privacy/PrivacyIndicator';
 import { AdSlot } from '../monetization/AdSlot';
+import {
+  FormatIcon,
+  MinifyIcon,
+  CopyIcon,
+  DownloadIcon,
+  UploadIcon,
+  SampleIcon,
+  ClearIcon,
+  UndoIcon,
+  RedoIcon,
+  HelpIcon,
+  CancelIcon,
+} from '../editor/icons';
 import { resolveConfig } from './config';
 import type { ToolMode } from '@/lib/tools';
 import {
@@ -409,76 +422,129 @@ export function Workbench({ mode }: { mode: ToolMode }) {
     <div className="mx-auto max-w-7xl px-4">
       {/* Controls row */}
       <div className="flex flex-wrap items-center gap-2 py-3">
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => void runPrimary()}
-          disabled={busy}
-        >
-          {config.primaryLabel}
-          <kbd className="ml-1 hidden text-[10px] opacity-70 sm:inline">⌘⏎</kbd>
-        </button>
-        {config.secondary === 'minify' && (
+        {/* Primary + run controls */}
+        <div className="btn-cluster">
           <button
             type="button"
-            className="btn"
-            onClick={() =>
-              void runOnce(
-                { kind: 'minify-json', source: input, options },
-                applyResult,
-                setBusy,
-                setOffloaded,
-                setProcessingMs,
-                handleRef,
-              )
-            }
+            className="btn btn-primary"
+            onClick={() => void runPrimary()}
             disabled={busy}
           >
-            Minify
+            <FormatIcon />
+            {config.primaryLabel}
+            <kbd className="ml-1 hidden rounded bg-white/20 px-1 text-[10px] font-medium sm:inline">
+              ⌘⏎
+            </kbd>
           </button>
-        )}
-        {busy && (
-          <button type="button" className="btn" onClick={cancel}>
-            Cancel
+          {config.secondary === 'minify' && (
+            <button
+              type="button"
+              className="btn border-transparent bg-transparent shadow-none hover:bg-slate-100 dark:hover:bg-slate-800"
+              onClick={() =>
+                void runOnce(
+                  { kind: 'minify-json', source: input, options },
+                  applyResult,
+                  setBusy,
+                  setOffloaded,
+                  setProcessingMs,
+                  handleRef,
+                )
+              }
+              disabled={busy}
+            >
+              <MinifyIcon />
+              Minify
+            </button>
+          )}
+          {busy && (
+            <button
+              type="button"
+              className="btn border-transparent bg-transparent text-rose-600 shadow-none hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40"
+              onClick={cancel}
+            >
+              <CancelIcon />
+              Cancel
+            </button>
+          )}
+        </div>
+
+        {/* Clipboard + file controls */}
+        <div className="btn-cluster">
+          <button
+            type="button"
+            className="btn border-transparent bg-transparent shadow-none hover:bg-slate-100 dark:hover:bg-slate-800"
+            onClick={() => void handleCopy()}
+            aria-label="Copy output"
+            title="Copy output (⌘⇧C)"
+          >
+            <CopyIcon />
+            <span className="hidden sm:inline">Copy</span>
           </button>
-        )}
-        <span className="mx-1 h-5 w-px bg-slate-300 dark:bg-slate-700" aria-hidden />
-        <button type="button" className="btn" onClick={() => void handleCopy()}>
-          Copy
-        </button>
-        <button type="button" className="btn" onClick={handleDownload}>
-          Download
-        </button>
-        <label className="btn cursor-pointer">
-          Upload
-          <input
-            type="file"
-            className="sr-only"
-            accept={[...acceptedExtensions, '.txt'].join(',')}
-            onChange={handleUploadInput}
-          />
-        </label>
-        <button type="button" className="btn" onClick={loadSample}>
-          Sample
-        </button>
-        <button type="button" className="btn" onClick={clearAll}>
-          Clear
-        </button>
-        <span className="mx-1 h-5 w-px bg-slate-300 dark:bg-slate-700" aria-hidden />
-        <button type="button" className="btn" onClick={undo} aria-label="Undo">
-          ↶
-        </button>
-        <button type="button" className="btn" onClick={redo} aria-label="Redo">
-          ↷
-        </button>
-        <button
-          type="button"
-          className="btn"
-          onClick={() => setHelpOpen(true)}
-          aria-label="Keyboard shortcuts"
-        >
-          ?
-        </button>
+          <button
+            type="button"
+            className="btn border-transparent bg-transparent shadow-none hover:bg-slate-100 dark:hover:bg-slate-800"
+            onClick={handleDownload}
+            aria-label="Download output"
+            title="Download output (⌘S)"
+          >
+            <DownloadIcon />
+            <span className="hidden sm:inline">Download</span>
+          </button>
+          <label
+            className="btn cursor-pointer border-transparent bg-transparent shadow-none hover:bg-slate-100 dark:hover:bg-slate-800"
+            title="Upload a file"
+          >
+            <UploadIcon />
+            <span className="hidden sm:inline">Upload</span>
+            <span className="sr-only">Upload a file</span>
+            <input
+              type="file"
+              className="sr-only"
+              accept={[...acceptedExtensions, '.txt'].join(',')}
+              onChange={handleUploadInput}
+            />
+          </label>
+          <button
+            type="button"
+            className="btn border-transparent bg-transparent shadow-none hover:bg-slate-100 dark:hover:bg-slate-800"
+            onClick={loadSample}
+            aria-label="Load sample"
+            title="Load a sample document"
+          >
+            <SampleIcon />
+            <span className="hidden sm:inline">Sample</span>
+          </button>
+          <button
+            type="button"
+            className="btn border-transparent bg-transparent shadow-none hover:bg-slate-100 dark:hover:bg-slate-800"
+            onClick={clearAll}
+            aria-label="Clear editor"
+            title="Clear the editor (Alt+K)"
+          >
+            <ClearIcon />
+            <span className="hidden sm:inline">Clear</span>
+          </button>
+        </div>
+
+        {/* History + help controls */}
+        <div className="btn-cluster">
+          <button type="button" className="btn-ghost" onClick={undo} aria-label="Undo" title="Undo">
+            <UndoIcon />
+          </button>
+          <button type="button" className="btn-ghost" onClick={redo} aria-label="Redo" title="Redo">
+            <RedoIcon />
+          </button>
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={() => setHelpOpen(true)}
+            aria-label="Keyboard shortcuts"
+            title="Keyboard shortcuts (Shift + ?)"
+          >
+            <HelpIcon />
+          </button>
+        </div>
+
         <div className="ml-auto">
           <PrivacyIndicator />
         </div>
@@ -486,7 +552,7 @@ export function Workbench({ mode }: { mode: ToolMode }) {
 
       {/* Formatting settings */}
       {(config.variant === 'format' || config.variant === 'convert') && (
-        <div className="pb-3">
+        <div className="mb-3 rounded-xl border border-slate-200/70 bg-white/50 px-3 py-2 backdrop-blur dark:border-slate-800 dark:bg-slate-900/40">
           <Toolbar
             options={options}
             onOptionsChange={patchOptions}
@@ -531,9 +597,21 @@ export function Workbench({ mode }: { mode: ToolMode }) {
           onDrop={onDrop}
           aria-label="Input editor"
         >
-          <div className="flex items-center justify-between border-b border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-500 dark:border-slate-800">
-            <span>Input · {config.inputLanguage.toUpperCase()}</span>
-            {dragOver && <span className="text-brand-600">Drop file to load</span>}
+          <div className="flex items-center justify-between border-b border-slate-200/80 bg-slate-50/60 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/40">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-brand-500" aria-hidden />
+              <span className="text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
+                Input
+              </span>
+              <span className="rounded-md bg-slate-200/70 px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                {config.inputLanguage}
+              </span>
+            </div>
+            {dragOver && (
+              <span className="text-xs font-medium text-brand-600 dark:text-brand-400">
+                Drop file to load
+              </span>
+            )}
           </div>
           <div className="min-h-0 flex-1">
             <CodeEditor
@@ -551,9 +629,25 @@ export function Workbench({ mode }: { mode: ToolMode }) {
           className={`card flex min-h-[420px] flex-col overflow-hidden ${mobileTab === 'output' ? '' : 'hidden'} md:flex`}
           aria-label={rightPanelLabel}
         >
-          <div className="border-b border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-500 dark:border-slate-800">
-            {config.variant === 'schema' ? 'Schema (JSON)' : rightPanelLabel}
-            {showOutputPanel ? ` · ${config.outputLanguage.toUpperCase()}` : ''}
+          <div className="flex items-center gap-2 border-b border-slate-200/80 bg-slate-50/60 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/40">
+            <span
+              className={`h-2 w-2 rounded-full ${
+                validity === 'valid'
+                  ? 'bg-emerald-500'
+                  : validity === 'invalid'
+                    ? 'bg-rose-500'
+                    : 'bg-slate-400'
+              }`}
+              aria-hidden
+            />
+            <span className="text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
+              {config.variant === 'schema' ? 'Schema' : rightPanelLabel}
+            </span>
+            {(showOutputPanel || config.variant === 'schema') && (
+              <span className="rounded-md bg-slate-200/70 px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                {config.variant === 'schema' ? 'json' : config.outputLanguage}
+              </span>
+            )}
           </div>
           <div className="min-h-0 flex-1">
             {showTreePanel && tree ? (

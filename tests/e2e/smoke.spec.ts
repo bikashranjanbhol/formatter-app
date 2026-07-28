@@ -52,6 +52,26 @@ test.describe('JSON & YAML Workbench smoke tests', () => {
     await expect(page.locator('html')).toHaveClass(/dark/);
   });
 
+  test('JSON viewer renders an interactive tree with working toggles', async ({ page }) => {
+    await page.goto('/json-viewer');
+    // Wait for the lazy editor to mount and hydrate before interacting.
+    await expect(page.locator('.cm-content').first()).toBeVisible();
+    await page.getByRole('button', { name: /load sample/i }).click();
+    // Wait for the sample to reach the editor before building.
+    await expect(page.locator('.cm-content').first()).toContainText('maxFileMb');
+    await page.getByRole('button', { name: /build tree/i }).click();
+    // Scope assertions to the interactive tree (the input editor also has text).
+    const tree = page.getByRole('tree', { name: 'Document tree' });
+    await expect(tree.getByText('product', { exact: true })).toBeVisible();
+    await expect(tree.getByText('maxFileMb', { exact: true })).toBeVisible();
+    // Collapse all hides nested children.
+    await page.getByRole('button', { name: /collapse all/i }).click();
+    await expect(tree.getByText('maxFileMb', { exact: true })).toHaveCount(0);
+    // Expanding the "limits" branch brings it back.
+    await page.getByRole('button', { name: /expand limits/i }).click();
+    await expect(tree.getByText('maxFileMb', { exact: true })).toBeVisible();
+  });
+
   test('landing page shows the demo and social proof', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: /messy in, clean out/i })).toBeVisible();

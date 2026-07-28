@@ -104,3 +104,42 @@ export const CancelIcon = (p: IconProps) => (
     <line x1="15" y1="9" x2="9" y2="15" />
   </Svg>
 );
+
+export const ChevronRightIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <polyline points="9 6 15 12 9 18" />
+  </Svg>
+);
+
+export const SearchIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="11" cy="11" r="7" />
+    <line x1="21" y1="21" x2="16.5" y2="16.5" />
+  </Svg>
+);
+
+export const LinkIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M9 15l6-6" />
+    <path d="M10.5 6.5l1-1a3.5 3.5 0 0 1 5 5l-1 1" />
+    <path d="M13.5 17.5l-1 1a3.5 3.5 0 0 1-5-5l1-1" />
+  </Svg>
+);
+
+export const ExpandIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <polyline points="15 3 21 3 21 9" />
+    <polyline points="9 21 3 21 3 15" />
+    <line x1="21" y1="3" x2="14" y2="10" />
+    <line x1="3" y1="21" x2="10" y2="14" />
+  </Svg>
+);
+
+export const CollapseIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <polyline points="4 14 10 14 10 20" />
+    <polyline points="20 10 14 10 14 4" />
+    <line x1="14" y1="10" x2="21" y2="3" />
+    <line x1="3" y1="21" x2="10" y2="14" />
+  </Svg>
+);

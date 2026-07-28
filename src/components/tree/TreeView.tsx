@@ -2,6 +2,14 @@
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import type { TreeNode } from '@/lib/types';
+import {
+  ChevronRightIcon,
+  SearchIcon,
+  CopyIcon,
+  LinkIcon,
+  ExpandIcon,
+  CollapseIcon,
+} from '../editor/icons';
 
 interface TreeViewProps {
   root: TreeNode;
@@ -10,12 +18,12 @@ interface TreeViewProps {
 }
 
 const typeColors: Record<TreeNode['type'], string> = {
-  string: 'text-emerald-700 dark:text-emerald-400',
-  number: 'text-sky-700 dark:text-sky-400',
-  boolean: 'text-purple-700 dark:text-purple-400',
-  null: 'text-slate-500',
-  object: 'text-slate-700 dark:text-slate-300',
-  array: 'text-slate-700 dark:text-slate-300',
+  string: 'text-emerald-600 dark:text-emerald-400',
+  number: 'text-sky-600 dark:text-sky-400',
+  boolean: 'text-purple-600 dark:text-purple-400',
+  null: 'text-slate-400 dark:text-slate-500',
+  object: 'text-slate-500 dark:text-slate-400',
+  array: 'text-slate-500 dark:text-slate-400',
 };
 
 // Above this many nodes we avoid auto-expanding everything to keep rendering
@@ -62,23 +70,33 @@ export function TreeView({ root, nodeCount, onCopy }: TreeViewProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 p-2 dark:border-slate-800">
-        <label className="sr-only" htmlFor="tree-search">
-          Search keys and values
-        </label>
-        <input
-          id="tree-search"
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search keys and values…"
-          className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-900"
-        />
-        <button type="button" className="btn" onClick={handleExpandAll}>
-          Expand all
+      <div className="flex flex-wrap items-center gap-2 border-b border-slate-200/80 p-2 dark:border-slate-800">
+        <div className="relative min-w-0 flex-1">
+          <SearchIcon className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <label className="sr-only" htmlFor="tree-search">
+            Search keys and values
+          </label>
+          <input
+            id="tree-search"
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search keys and values…"
+            className="w-full rounded-lg border border-slate-300 bg-white py-1.5 pl-8 pr-2 text-sm shadow-sm focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900"
+          />
+        </div>
+        <button type="button" className="btn" onClick={handleExpandAll} title="Expand all branches">
+          <ExpandIcon />
+          <span className="hidden sm:inline">Expand all</span>
         </button>
-        <button type="button" className="btn" onClick={handleCollapseAll}>
-          Collapse all
+        <button
+          type="button"
+          className="btn"
+          onClick={handleCollapseAll}
+          title="Collapse all branches"
+        >
+          <CollapseIcon />
+          <span className="hidden sm:inline">Collapse all</span>
         </button>
       </div>
       {nodeCount > LARGE_TREE_THRESHOLD && (
@@ -87,7 +105,7 @@ export function TreeView({ root, nodeCount, onCopy }: TreeViewProps) {
           performance — expand what you need.
         </p>
       )}
-      <div className="flex-1 overflow-auto p-2 font-mono text-sm">
+      <div className="flex-1 overflow-auto p-1.5 font-mono text-[13px] leading-6">
         <ul role="tree" aria-label="Document tree">
           {root.children ? (
             root.children.map((child) => (
@@ -155,44 +173,65 @@ function TreeItem({
   };
   const copyPath = () => onCopy?.(node.path || '/', `path ${node.path || '/'}`);
 
+  const bracket = node.type === 'array' ? '[ ]' : '{ }';
+
   return (
     <li role="treeitem" aria-selected={false} aria-expanded={isBranch ? open : undefined}>
       <div
-        className="group flex items-center gap-1 rounded px-1 hover:bg-slate-100 dark:hover:bg-slate-800"
-        style={{ paddingLeft: `${depth * 14}px` }}
+        className="group flex items-center gap-1.5 rounded-md py-0.5 pr-1 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/70"
+        style={{ paddingLeft: `${depth * 18 + 4}px` }}
       >
         {isBranch ? (
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="w-4 shrink-0 text-slate-400"
-            aria-label={open ? `Collapse ${node.key}` : `Expand ${node.key}`}
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+            aria-label={open ? `Collapse ${node.key || 'root'}` : `Expand ${node.key || 'root'}`}
           >
-            {open ? '▾' : '▸'}
+            <ChevronRightIcon
+              className={`h-4 w-4 transition-transform duration-150 ${open ? 'rotate-90' : ''}`}
+            />
           </button>
         ) : (
-          <span className="w-4 shrink-0" aria-hidden />
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center" aria-hidden>
+            <span className="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-600" />
+          </span>
         )}
-        <span className="text-slate-800 dark:text-slate-200">
-          {node.key !== '' && <span className="text-slate-500">{node.key}: </span>}
-        </span>
-        <span className={typeColors[node.type]}>{node.preview}</span>
-        <span className="ml-auto hidden gap-1 group-hover:flex">
+
+        {node.key !== '' && (
+          <span className="font-medium text-slate-700 dark:text-slate-200">{node.key}</span>
+        )}
+        {node.key !== '' && <span className="text-slate-400">:</span>}
+
+        {isBranch ? (
+          <span className="flex items-center gap-1.5">
+            <span className="font-semibold text-slate-400 dark:text-slate-500">{bracket}</span>
+            <span className="rounded-full bg-slate-100 px-1.5 text-[11px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+              {node.preview}
+            </span>
+          </span>
+        ) : (
+          <span className={`truncate ${typeColors[node.type]}`}>{node.preview}</span>
+        )}
+
+        <span className="ml-auto flex items-center gap-0.5 pl-2 opacity-100 transition-opacity md:opacity-0 md:focus-within:opacity-100 md:group-hover:opacity-100">
           <button
             type="button"
             onClick={copyValue}
-            className="rounded px-1 text-xs text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700"
+            className="flex h-6 w-6 items-center justify-center rounded-md text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"
             title="Copy value"
+            aria-label={`Copy value at ${node.path || 'root'}`}
           >
-            copy
+            <CopyIcon className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
             onClick={copyPath}
-            className="rounded px-1 text-xs text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700"
+            className="flex h-6 w-6 items-center justify-center rounded-md text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"
             title="Copy JSON Pointer path"
+            aria-label={`Copy path ${node.path || '/'}`}
           >
-            path
+            <LinkIcon className="h-3.5 w-3.5" />
           </button>
         </span>
       </div>

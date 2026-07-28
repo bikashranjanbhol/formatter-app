@@ -29,7 +29,7 @@
     "@uiw/react-codemirror": "^4.23.7",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
-    "next": "15.1.6",
+    "next": "15.5.22",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "yaml": "^2.7.0"
@@ -45,7 +45,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.18.0",
-    "eslint-config-next": "15.1.6",
+    "eslint-config-next": "15.5.22",
     "eslint-config-prettier": "^9.1.0",
     "jsdom": "^25.0.1",
     "postcss": "^8.4.49",

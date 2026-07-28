@@ -1,0 +1,61 @@
+import { test, expect } from '@playwright/test';
+
+test.describe('JSON & YAML Workbench smoke tests', () => {
+  test('home page renders and links to tools', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(/JSON/i);
+    await expect(page.getByRole('link', { name: /Format JSON/i }).first()).toBeVisible();
+  });
+
+  test('JSON formatter formats a document locally', async ({ page }) => {
+    await page.goto('/json-formatter');
+    // The privacy indicator is always present.
+    await expect(page.getByRole('link', { name: /Processed locally/i })).toBeVisible();
+    // Type compact JSON into the input editor.
+    const editor = page.locator('.cm-content').first();
+    await editor.click();
+    await page.keyboard.type('{"b":2,"a":1}');
+    await page.getByRole('button', { name: /^Format/ }).click();
+    // The status bar should report a valid document (● Valid badge).
+    await expect(page.getByText('● Valid')).toBeVisible();
+    // The formatted output should appear in the read-only output editor.
+    await expect(page.locator('.cm-content').nth(1)).toContainText('"b": 2');
+  });
+
+  test('JSON validator reports an error location', async ({ page }) => {
+    await page.goto('/json-validator');
+    const editor = page.locator('.cm-content');
+    await editor.click();
+    await page.keyboard.type('{ "a": 1, }');
+    await page.getByRole('button', { name: /Validate/ }).click();
+    await expect(page.getByText(/error/i).first()).toBeVisible();
+  });
+
+  test('YAML to JSON conversion warns about lossy features', async ({ page }) => {
+    await page.goto('/yaml-to-json');
+    await page.getByRole('button', { name: 'Sample' }).click();
+    await page.getByRole('button', { name: /Convert to JSON/ }).click();
+    // The sample uses anchors/aliases and comments, so warnings should show.
+    await expect(page.getByText(/warning/i).first()).toBeVisible();
+  });
+
+  test('mobile layout exposes input/output tabs', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 800 });
+    await page.goto('/json-formatter');
+    await expect(page.getByRole('tab', { name: 'Input' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: /Output/ })).toBeVisible();
+  });
+
+  test('theme can be switched to dark', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: /dark theme/i }).click();
+    await expect(page.locator('html')).toHaveClass(/dark/);
+  });
+
+  test('health endpoint responds ok', async ({ request }) => {
+    const res = await request.get('/api/health');
+    expect(res.ok()).toBeTruthy();
+    const body = await res.json();
+    expect(body.status).toBe('ok');
+  });
+});

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="JSON and YAML Workbench">
+  <rect width="512" height="512" rx="96" fill="#195cf5"/>
+  <g fill="none" stroke="#ffffff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M188 128 c-40 0 -40 40 -40 64 c0 24 0 40 -40 40 c40 0 40 16 40 40 c0 24 0 64 40 64"/>
+    <path d="M324 128 c40 0 40 40 40 64 c0 24 0 40 40 40 c-40 0 -40 16 -40 40 c0 24 0 64 -40 64"/>
+  </g>
+</svg>

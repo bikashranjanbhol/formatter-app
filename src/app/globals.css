@@ -81,6 +81,29 @@
   border-right-color: var(--grid-line);
 }
 
+/* Larger, clearer code-folding markers in the gutter. */
+.cm-editor .cm-foldGutter {
+  min-width: 20px;
+}
+.cm-editor .cm-fold-marker {
+  color: #94a3b8;
+  border-radius: 4px;
+  transition:
+    color 120ms ease,
+    background-color 120ms ease;
+}
+.cm-editor .cm-fold-marker:hover {
+  color: #1447e1;
+  background-color: rgba(49, 123, 255, 0.12);
+}
+:root.dark .cm-editor .cm-fold-marker {
+  color: #64748b;
+}
+:root.dark .cm-editor .cm-fold-marker:hover {
+  color: #93c1ff;
+  background-color: rgba(49, 123, 255, 0.18);
+}
+
 /* Slim, unobtrusive scrollbars that match the theme. */
 * {
   scrollbar-width: thin;

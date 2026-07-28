@@ -4,6 +4,8 @@ import { TOOLS } from '@/lib/tools';
 import { SITE_NAME, SITE_TAGLINE, SITE_URL } from '@/lib/config';
 import { JsonLd, webAppStructuredData } from '@/components/seo/JsonLd';
 import { PrivacyIndicator } from '@/components/privacy/PrivacyIndicator';
+import { BeforeAfterDemo } from '@/components/marketing/BeforeAfterDemo';
+import { SocialProof } from '@/components/marketing/SocialProof';
 
 export const metadata: Metadata = {
   title: `${SITE_NAME} — Private JSON & YAML Tools That Run In Your Browser`,
@@ -97,6 +99,23 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* Animated before/after demo */}
+      <section className="mx-auto max-w-7xl px-4 py-12" aria-labelledby="demo-heading">
+        <h2 id="demo-heading" className="text-center text-2xl font-semibold sm:text-3xl">
+          Messy in, clean out — instantly
+        </h2>
+        <p className="mx-auto mt-2 max-w-2xl text-center text-slate-600 dark:text-slate-400">
+          Paste minified or hand-edited JSON and get readable, valid output in milliseconds. It all
+          happens right here in your browser.
+        </p>
+        <div className="mt-8">
+          <BeforeAfterDemo />
+        </div>
+      </section>
+
+      {/* Social proof */}
+      <SocialProof />
 
       <section className="mx-auto max-w-7xl px-4 py-8">
         <h2 className="text-2xl font-semibold">All tools</h2>

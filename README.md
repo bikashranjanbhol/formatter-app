@@ -32,20 +32,20 @@ Built with Next.js (App Router), React, TypeScript (strict), Tailwind CSS, CodeM
 
 ### Tools (public routes)
 
-| Route | What it does |
-| --- | --- |
-| `/` | Landing page with all tools and value proposition |
-| `/json-formatter` | Format / beautify JSON (2-space, 4-space, tab; LF/CRLF; sort keys optional) |
-| `/json-validator` | Validate JSON with precise line/column errors, duplicate-key & precision warnings |
-| `/json-viewer` | Collapsible tree view with search, expand/collapse all, copy value / JSON Pointer path |
-| `/json-minifier` | Minify JSON (validated first) |
-| `/json-to-yaml` | Convert JSON → YAML 1.2, preserving key order |
-| `/yaml-formatter` | Format YAML 1.2, preserving comments, anchors, aliases, tags, key order |
-| `/yaml-validator` | Validate YAML 1.2 with exact error locations; multi-document aware |
-| `/yaml-to-json` | Convert YAML → JSON with honest lossy-feature warnings |
-| `/json-schema-validator` | Validate JSON or YAML against a JSON Schema (Draft 2020-12) |
-| `/pricing` | Free / Pro / Developer-API / Team plans (paid features honestly marked "Coming soon") |
-| `/privacy`, `/terms`, `/about` | Company pages |
+| Route                          | What it does                                                                           |
+| ------------------------------ | -------------------------------------------------------------------------------------- |
+| `/`                            | Landing page with all tools and value proposition                                      |
+| `/json-formatter`              | Format / beautify JSON (2-space, 4-space, tab; LF/CRLF; sort keys optional)            |
+| `/json-validator`              | Validate JSON with precise line/column errors, duplicate-key & precision warnings      |
+| `/json-viewer`                 | Collapsible tree view with search, expand/collapse all, copy value / JSON Pointer path |
+| `/json-minifier`               | Minify JSON (validated first)                                                          |
+| `/json-to-yaml`                | Convert JSON → YAML 1.2, preserving key order                                          |
+| `/yaml-formatter`              | Format YAML 1.2, preserving comments, anchors, aliases, tags, key order                |
+| `/yaml-validator`              | Validate YAML 1.2 with exact error locations; multi-document aware                     |
+| `/yaml-to-json`                | Convert YAML → JSON with honest lossy-feature warnings                                 |
+| `/json-schema-validator`       | Validate JSON or YAML against a JSON Schema (Draft 2020-12)                            |
+| `/pricing`                     | Free / Pro / Developer-API / Team plans (paid features honestly marked "Coming soon")  |
+| `/privacy`, `/terms`, `/about` | Company pages                                                                          |
 
 ### Core capabilities
 
@@ -100,18 +100,18 @@ npm run dev                  # http://localhost:3000
 
 ## Available scripts
 
-| Script | Description |
-| --- | --- |
-| `npm run dev` | Start the dev server |
-| `npm run build` | Production build (also type-checks and lints) |
-| `npm run start` | Serve the production build |
-| `npm run lint` | ESLint |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm run format` | Prettier write |
-| `npm run format:check` | Prettier check |
-| `npm run test` | Unit/component tests (Vitest) once |
-| `npm run test:watch` | Vitest watch mode |
-| `npm run test:e2e` | Playwright end-to-end tests (builds + serves automatically) |
+| Script                 | Description                                                 |
+| ---------------------- | ----------------------------------------------------------- |
+| `npm run dev`          | Start the dev server                                        |
+| `npm run build`        | Production build (also type-checks and lints)               |
+| `npm run start`        | Serve the production build                                  |
+| `npm run lint`         | ESLint                                                      |
+| `npm run typecheck`    | `tsc --noEmit`                                              |
+| `npm run format`       | Prettier write                                              |
+| `npm run format:check` | Prettier check                                              |
+| `npm run test`         | Unit/component tests (Vitest) once                          |
+| `npm run test:watch`   | Vitest watch mode                                           |
+| `npm run test:e2e`     | Playwright end-to-end tests (builds + serves automatically) |
 
 ---
 
@@ -119,12 +119,12 @@ npm run dev                  # http://localhost:3000
 
 All are optional; the app builds and runs without them. See `.env.example`.
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | Canonical URLs, sitemap, Open Graph. **Set this in production.** |
-| `NEXT_PUBLIC_GITHUB_URL` | `https://github.com/` | Header/footer GitHub link (placeholder) |
-| `NEXT_PUBLIC_ENABLE_ADS` | `false` | Show advertising **placeholder** slots (hidden by default, incl. dev) |
-| `NEXT_PUBLIC_MAX_FILE_BYTES` | `10485760` (10 MB) | Client-side upload size limit |
+| Variable                     | Default                 | Purpose                                                               |
+| ---------------------------- | ----------------------- | --------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`       | `http://localhost:3000` | Canonical URLs, sitemap, Open Graph. **Set this in production.**      |
+| `NEXT_PUBLIC_GITHUB_URL`     | `https://github.com/`   | Header/footer GitHub link (placeholder)                               |
+| `NEXT_PUBLIC_ENABLE_ADS`     | `false`                 | Show advertising **placeholder** slots (hidden by default, incl. dev) |
+| `NEXT_PUBLIC_MAX_FILE_BYTES` | `10485760` (10 MB)      | Client-side upload size limit                                         |
 
 No secrets are required. Never commit real secrets; use your deployment platform's secret storage.
 
@@ -278,4 +278,16 @@ without a separate backend and without requiring credentials to build or run tod
 - **Advertising & paid plans.** Ad slots are clearly labelled placeholders (no real network is
   integrated) and are hidden unless `NEXT_PUBLIC_ENABLE_ADS=true`. Paid capabilities that are not
   built are marked "Coming soon"; there is no checkout flow yet.
+- **Testimonials are placeholder content.** The landing-page testimonials in
+  `src/lib/testimonials.ts` are sample copy, attributed by role only and visibly badged "Sample
+  content." Replace them with real, permissioned quotes before launch — do not present invented
+  quotes as genuine reviews. The trust-bar figures next to them are honest, verifiable product facts.
+- **Social sharing images.** Branded Open Graph / Twitter images are generated on the fly with
+  `next/og` — one site-wide default (`src/app/opengraph-image.tsx`, `twitter-image.tsx`) and a
+  titled image per tool (`src/app/<slug>/opengraph-image.tsx`), all driven by
+  `src/lib/og.tsx`. The landing page also has a lightweight, illustrative before/after animation
+  (`src/components/marketing/BeforeAfterDemo.tsx`) that respects `prefers-reduced-motion`.
+
+```
+
 ```

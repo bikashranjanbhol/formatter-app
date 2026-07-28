@@ -52,6 +52,28 @@ test.describe('JSON & YAML Workbench smoke tests', () => {
     await expect(page.locator('html')).toHaveClass(/dark/);
   });
 
+  test('landing page shows the demo and social proof', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: /messy in, clean out/i })).toBeVisible();
+    await expect(page.getByText('bytes uploaded to a server')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /loved by developers/i })).toBeVisible();
+    // Placeholder testimonials must be clearly labelled as sample content.
+    await expect(page.getByText('Sample content')).toBeVisible();
+  });
+
+  test('open graph image is generated as a PNG', async ({ page, request }) => {
+    await page.goto('/json-formatter');
+    // Next serves the OG image at a hashed path referenced in the meta tag.
+    const ogUrl = await page.locator('meta[property="og:image"]').getAttribute('content');
+    expect(ogUrl).toBeTruthy();
+    // The meta URL uses the configured site origin; fetch just the path+query
+    // so it resolves against the test server's baseURL.
+    const { pathname, search } = new URL(ogUrl!);
+    const res = await request.get(`${pathname}${search}`);
+    expect(res.status()).toBe(200);
+    expect(res.headers()['content-type']).toContain('image/png');
+  });
+
   test('health endpoint responds ok', async ({ request }) => {
     const res = await request.get('/api/health');
     expect(res.ok()).toBeTruthy();

@@ -1,10 +1,17 @@
 /**
- * Central application configuration. The production site URL is read from an
- * environment variable so no fake domain is hardcoded.
+ * Central application configuration.
+ *
+ * The production site URL is read from NEXT_PUBLIC_SITE_URL when set (recommended
+ * — configure it in your host dashboard). If it's missing, we fall back to the
+ * production domain below in production builds, and to localhost in development.
+ * Change PRODUCTION_SITE_URL if you deploy under a different domain.
  */
 
+const PRODUCTION_SITE_URL = 'https://jsonyamltools.com';
+
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'http://localhost:3000';
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ||
+  (process.env.NODE_ENV === 'production' ? PRODUCTION_SITE_URL : 'http://localhost:3000');
 
 export const SITE_NAME = 'JSON & YAML Workbench';
 

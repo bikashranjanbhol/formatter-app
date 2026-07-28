@@ -11,8 +11,9 @@ test.describe('JSON & YAML Workbench smoke tests', () => {
     await page.goto('/json-formatter');
     // The privacy indicator is always present.
     await expect(page.getByRole('link', { name: /Processed locally/i })).toBeVisible();
-    // Type compact JSON into the input editor.
+    // Wait for the lazy editor to mount and hydrate before typing.
     const editor = page.locator('.cm-content').first();
+    await expect(editor).toBeVisible();
     await editor.click();
     await page.keyboard.type('{"b":2,"a":1}');
     await page.getByRole('button', { name: /^Format/ }).click();
@@ -25,6 +26,7 @@ test.describe('JSON & YAML Workbench smoke tests', () => {
   test('JSON validator reports an error location', async ({ page }) => {
     await page.goto('/json-validator');
     const editor = page.locator('.cm-content');
+    await expect(editor).toBeVisible();
     await editor.click();
     await page.keyboard.type('{ "a": 1, }');
     await page.getByRole('button', { name: /Validate/ }).click();

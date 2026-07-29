@@ -73,6 +73,11 @@ function resolveVariant(mode: ToolMode): WorkbenchConfig {
         sample: SAMPLE_JSON,
         showSortKeys: false,
       });
+    // The anonymizer has its own dedicated component (AnonymizerWorkbench) and
+    // does not use the generic Workbench; this case only satisfies the
+    // exhaustive switch below.
+    case 'json-anonymizer':
+      return base('json', 'json', 'format', 'Anonymize', { sample: SAMPLE_JSON });
     default: {
       const _exhaustive: never = mode;
       return _exhaustive;

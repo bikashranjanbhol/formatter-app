@@ -9,6 +9,7 @@ export type ToolMode =
   | 'json-viewer'
   | 'json-minifier'
   | 'json-to-yaml'
+  | 'json-anonymizer'
   | 'yaml-formatter'
   | 'yaml-validator'
   | 'yaml-to-json'
@@ -89,6 +90,18 @@ export const TOOLS: ToolMeta[] = [
       'Convert JSON to YAML 1.2 while preserving key order. Runs locally in your browser with no uploads.',
     intro:
       'Convert JSON into clean YAML 1.2. Key order from your JSON is preserved, and the conversion runs entirely in your browser so your data stays on your machine.',
+    language: 'json',
+    group: 'JSON',
+  },
+  {
+    slug: 'json-anonymizer',
+    nav: 'JSON Anonymizer',
+    title: 'JSON Anonymizer & Data Masker',
+    seoTitle: 'JSON Anonymizer — Mask & Redact Data In-Browser',
+    description:
+      'Replace sensitive JSON values with realistic dummy data or redact them — all values or only specific keys. Runs entirely in your browser; nothing is uploaded.',
+    intro:
+      'Sanitize JSON before sharing it in a ticket, Slack message, or bug report. Swap real values for realistic fake data, mask them with ***, or replace only the keys you choose (like email, ssn, or token). Everything happens locally in your browser, so the original data never leaves your device.',
     language: 'json',
     group: 'JSON',
   },

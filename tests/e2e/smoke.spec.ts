@@ -74,6 +74,20 @@ test.describe('JSON & YAML Workbench smoke tests', () => {
     await expect(tree.getByText('maxFileMb', { exact: true })).toBeVisible();
   });
 
+  test('JSON anonymizer masks values locally', async ({ page }) => {
+    await page.goto('/json-anonymizer');
+    const editor = page.locator('.cm-content').first();
+    await expect(editor).toBeVisible();
+    await editor.click();
+    await page.keyboard.type('{"email":"real@company.com","age":41}');
+    await page.getByRole('button', { name: /^Anonymize/ }).click();
+    // Output should no longer contain the real email, and status goes valid.
+    const output = page.locator('.cm-content').nth(1);
+    await expect(output).toContainText('example.com');
+    await expect(output).not.toContainText('real@company.com');
+    await expect(page.getByText('● Valid')).toBeVisible();
+  });
+
   test('landing page shows the demo and social proof', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: /messy in, clean out/i })).toBeVisible();

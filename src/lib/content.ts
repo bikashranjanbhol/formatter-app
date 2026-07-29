@@ -145,6 +145,38 @@ export const TOOL_CONTENT: Record<ToolMode, ToolContent> = {
       },
     ],
   },
+  'json-anonymizer': {
+    instructions: [
+      'Paste or upload the JSON you want to sanitize.',
+      'Choose a scope: replace All values, or only specific keys (type key names like email, name, ssn).',
+      'Pick a style: Realistic fake data, Redact (***), or Type placeholder.',
+      'Press Anonymize, then copy or download the safe-to-share result. Your original data never leaves the browser.',
+    ],
+    example: {
+      title: 'Masking PII before sharing a payload',
+      input: '{ "name": "Ada Lovelace", "email": "ada@company.com", "id": 42, "active": true }',
+      output: '{ "name": "Jordan Lee", "email": "user1@example.com", "id": 1001, "active": false }',
+      note: 'With “Realistic” style, values are swapped for believable fake data while keys, structure, and types stay intact.',
+    },
+    faq: [
+      {
+        q: 'Is my data sent anywhere to be anonymized?',
+        a: 'No. The replacement happens entirely in your browser with JavaScript (and a Web Worker for large files). Your original values never leave your device.',
+      },
+      {
+        q: 'Can I anonymize only certain fields?',
+        a: 'Yes. Choose the “Only these keys” scope and list the key names (for example: email, phone, ssn, token). Matching is case-insensitive and works at any depth. If a matched key holds an object or array, everything inside it is anonymized too.',
+      },
+      {
+        q: 'What replacement styles are available?',
+        a: 'Realistic fake data (key-aware — emails become user@example.com, names become fake names), Redact (mask with ***), and Type placeholder ("string", 0, true). Secret-like keys such as password, token, or apiKey are always fully redacted.',
+      },
+      {
+        q: 'Does it keep my JSON structure?',
+        a: 'Yes. Keys, nesting, array lengths, and value types are preserved — only the values change, so the anonymized output stays a valid, representative sample.',
+      },
+    ],
+  },
   'yaml-formatter': {
     instructions: [
       'Paste or upload YAML (.yaml or .yml).',

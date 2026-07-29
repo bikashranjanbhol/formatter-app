@@ -1,54 +1,26 @@
 /**
  * Social-proof content for the landing page.
  *
- * ⚠️ IMPORTANT: The entries below are PLACEHOLDER copy shipped with the
- * template. They are intentionally attributed by role only (no real names,
- * companies, or logos) so nothing reads as a fabricated endorsement. Before
- * launch, replace them with REAL, permissioned quotes from actual users — and
- * only then add real names/companies with their consent. Do not present
- * invented quotes as genuine reviews.
+ * The placeholder testimonials were removed — we do not ship invented quotes.
+ * When you have REAL, permissioned reviews from actual users, add them back as
+ * a `TESTIMONIALS` array here (with their consent to be named) and render them
+ * in `SocialProof`. Until then, only the verifiable trust facts below are shown.
+ *
+ * Template for a real testimonial, for when you have one:
+ *
+ *   export interface Testimonial {
+ *     quote: string;
+ *     author: string;   // real name, with permission
+ *     role: string;     // e.g. "Backend Engineer, Acme"
+ *     initials: string;
+ *   }
+ *   export const TESTIMONIALS: Testimonial[] = [ ... ];
  */
-
-export interface Testimonial {
-  quote: string;
-  author: string;
-  role: string;
-  /** Initials shown in the avatar bubble. */
-  initials: string;
-  placeholder?: boolean;
-}
-
-export const TESTIMONIALS: Testimonial[] = [
-  {
-    quote:
-      'The one JSON tool I can actually paste a production payload into — nothing leaves the browser, so I don’t have to think twice.',
-    author: 'Sample review',
-    role: 'Backend Engineer',
-    initials: 'BE',
-    placeholder: true,
-  },
-  {
-    quote:
-      'Schema validation with Draft 2020-12 and errors grouped by path saved our team an afternoon of guesswork.',
-    author: 'Sample review',
-    role: 'Platform Team Lead',
-    initials: 'PL',
-    placeholder: true,
-  },
-  {
-    quote:
-      'YAML → JSON that actually warns me when anchors get expanded. Finally a converter that’s honest about what it changes.',
-    author: 'Sample review',
-    role: 'DevOps Engineer',
-    initials: 'DE',
-    placeholder: true,
-  },
-];
 
 /** Honest, verifiable product facts — safe to display as-is (not user quotes). */
 export const TRUST_FACTS: { value: string; label: string }[] = [
   { value: '0', label: 'bytes uploaded to a server' },
   { value: '10 MB+', label: 'documents handled smoothly' },
   { value: '2020-12', label: 'JSON Schema draft supported' },
-  { value: '9', label: 'JSON & YAML tools in one place' },
+  { value: '11', label: 'JSON & YAML tools in one place' },
 ];

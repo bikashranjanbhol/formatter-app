@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { formatYaml, validateYaml, yamlToJson, jsonToYaml, yamlToValue } from '@/lib/yaml';
+import {
+  formatYaml,
+  validateYaml,
+  yamlToJson,
+  jsonToYaml,
+  yamlToValue,
+  anonymizeYaml,
+} from '@/lib/yaml';
+import { parse as parseYamlDoc } from 'yaml';
 import { DEFAULT_FORMAT_OPTIONS } from '@/lib/types';
 import type { FormatOptions } from '@/lib/types';
 
@@ -124,5 +132,52 @@ describe('YAML/JSON conversion with warnings', () => {
     const result = yamlToJson(bomb, opts());
     expect(result.ok).toBe(false);
     expect(result.errors[0]?.message.toLowerCase()).toContain('alias');
+  });
+});
+
+describe('YAML anonymizer', () => {
+  const anonOpts = (o: Partial<Parameters<typeof anonymizeYaml>[1]> = {}) => ({
+    scope: 'all' as const,
+    keys: [] as string[],
+    strategy: 'realistic' as const,
+    indent: 'two-space' as const,
+    lineEnding: 'lf' as const,
+    finalNewline: true,
+    ...o,
+  });
+
+  it('replaces values and produces valid YAML', () => {
+    const res = anonymizeYaml('name: Ada\nemail: ada@corp.com\n', anonOpts());
+    expect(res.ok).toBe(true);
+    const v = parseYamlDoc(res.output!) as Record<string, unknown>;
+    expect(v.name).not.toBe('Ada');
+    expect(String(v.email)).toMatch(/@example\.com$/);
+  });
+
+  it('always redacts secret-like keys', () => {
+    const res = anonymizeYaml('db:\n  password: s3cr3t\n  apiKey: sk_live_x\n', anonOpts());
+    const v = parseYamlDoc(res.output!) as { db: Record<string, unknown> };
+    expect(v.db.password).toBe('***REDACTED***');
+    expect(v.db.apiKey).toBe('***REDACTED***');
+  });
+
+  it('anonymizes only named keys when scope is keys', () => {
+    const res = anonymizeYaml(
+      'email: a@b.com\nname: Ada\n',
+      anonOpts({ scope: 'keys', keys: ['email'], strategy: 'redact' }),
+    );
+    const v = parseYamlDoc(res.output!) as Record<string, unknown>;
+    expect(v.email).toBe('***');
+    expect(v.name).toBe('Ada');
+  });
+
+  it('warns that comments and anchors are not preserved', () => {
+    const res = anonymizeYaml('# a comment\nname: Ada\n', anonOpts());
+    expect(res.warnings.some((w) => w.code === 'yaml-roundtrip')).toBe(true);
+  });
+
+  it('rejects invalid YAML', () => {
+    const res = anonymizeYaml('a:\n  b: 1\n   c: 2\n', anonOpts());
+    expect(res.ok).toBe(false);
   });
 });

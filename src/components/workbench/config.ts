@@ -78,6 +78,8 @@ function resolveVariant(mode: ToolMode): WorkbenchConfig {
     // exhaustive switch below.
     case 'json-anonymizer':
       return base('json', 'json', 'format', 'Anonymize', { sample: SAMPLE_JSON });
+    case 'yaml-anonymizer':
+      return base('yaml', 'yaml', 'format', 'Anonymize', { sample: SAMPLE_JSON });
     default: {
       const _exhaustive: never = mode;
       return _exhaustive;

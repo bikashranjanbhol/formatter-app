@@ -1,7 +1,7 @@
 import type { EngineResult, FormatOptions } from './types';
 import { formatJson, minifyJson, validateJson } from './json/format';
 import { anonymizeJson, type AnonymizeOptions } from './json/anonymize';
-import { formatYaml, validateYaml, yamlToJson, jsonToYaml } from './yaml';
+import { formatYaml, validateYaml, yamlToJson, jsonToYaml, anonymizeYaml } from './yaml';
 import { validateWithSchema } from './schema/validate';
 import { parseJson } from './json/parse';
 import { yamlToValue } from './yaml';
@@ -22,7 +22,8 @@ export type EngineOperation =
   | { kind: 'json-to-yaml'; source: string; options: FormatOptions }
   | { kind: 'schema-validate'; schema: string; instance: string; instanceKind: 'json' | 'yaml' }
   | { kind: 'build-tree'; source: string; sourceKind: 'json' | 'yaml' }
-  | { kind: 'anonymize-json'; source: string; options: AnonymizeOptions };
+  | { kind: 'anonymize-json'; source: string; options: AnonymizeOptions }
+  | { kind: 'anonymize-yaml'; source: string; options: AnonymizeOptions };
 
 export interface TreeResult {
   ok: boolean;
@@ -66,6 +67,8 @@ export function runOperation(op: EngineOperation): EngineResponse {
       return runBuildTree(op.source, op.sourceKind);
     case 'anonymize-json':
       return anonymizeJson(op.source, op.options);
+    case 'anonymize-yaml':
+      return anonymizeYaml(op.source, op.options);
     default: {
       const _exhaustive: never = op;
       return {

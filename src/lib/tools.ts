@@ -13,6 +13,7 @@ export type ToolMode =
   | 'yaml-formatter'
   | 'yaml-validator'
   | 'yaml-to-json'
+  | 'yaml-anonymizer'
   | 'json-schema-validator';
 
 export interface ToolMeta {
@@ -138,6 +139,18 @@ export const TOOLS: ToolMeta[] = [
       'Convert YAML 1.2 to JSON with clear warnings when features like comments, aliases, or multiple documents cannot be represented faithfully.',
     intro:
       'Convert YAML into JSON, with honest warnings. Because JSON cannot represent comments, shared aliases, custom tags, or multiple documents, the converter tells you exactly what changes before you rely on the output.',
+    language: 'yaml',
+    group: 'YAML',
+  },
+  {
+    slug: 'yaml-anonymizer',
+    nav: 'YAML Anonymizer',
+    title: 'YAML Anonymizer & Data Masker',
+    seoTitle: 'YAML Anonymizer — Mask & Redact Data In-Browser',
+    description:
+      'Replace sensitive YAML values with realistic dummy data or redact them — all values or only specific keys. Runs entirely in your browser; nothing is uploaded.',
+    intro:
+      'Sanitize YAML config or data before sharing it. Swap real values for realistic fake data, mask them with ***, or replace only the keys you choose. Everything happens locally in your browser, so the original data never leaves your device. Note: anonymizing re-serializes YAML, so comments and anchors are not preserved.',
     language: 'yaml',
     group: 'YAML',
   },

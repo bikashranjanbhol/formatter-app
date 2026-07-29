@@ -159,6 +159,65 @@ function replaceScalar(
   }
 }
 
+/** Core anonymization options (format-independent). */
+export interface AnonymizeCoreOptions {
+  scope: AnonymizeScope;
+  keys: string[];
+  strategy: AnonymizeStrategy;
+}
+
+/** How many non-empty key names were provided (after trimming). */
+export function namedKeyCount(keys: string[]): number {
+  return keys.filter((k) => k.trim().length > 0).length;
+}
+
+/**
+ * Anonymize an already-parsed JS value. Framework- and format-independent, so
+ * it is reused by both the JSON and YAML anonymizers. Returns the new value and
+ * how many scalars were replaced.
+ */
+export function anonymizeValue(
+  value: unknown,
+  options: AnonymizeCoreOptions,
+): { value: unknown; replaced: number } {
+  const keySet = new Set(
+    options.keys.map((k) => k.trim().toLowerCase()).filter((k) => k.length > 0),
+  );
+  const ctx: Ctx = { counter: 1, replaced: 0 };
+
+  const walk = (val: unknown, key: string | null, targeted: boolean): unknown => {
+    const nowTargeted =
+      targeted || (options.scope === 'keys' && key != null && keySet.has(key.toLowerCase()));
+
+    if (Array.isArray(val)) {
+      return val.map((item) => walk(item, null, nowTargeted));
+    }
+    if (val && typeof val === 'object') {
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(val as Record<string, unknown>)) {
+        out[k] = walk(v, k, nowTargeted);
+      }
+      return out;
+    }
+    if (options.scope === 'all' || nowTargeted) {
+      return replaceScalar(val, key, options.strategy, ctx);
+    }
+    return val;
+  };
+
+  return { value: walk(value, null, false), replaced: ctx.replaced };
+}
+
+/** Advisory note describing the result of an anonymization run. */
+export function anonymizeNote(replaced: number, scope: AnonymizeScope): string {
+  if (replaced === 0) {
+    return scope === 'keys'
+      ? 'No matching keys were found, so nothing was changed. Check the key names.'
+      : 'No scalar values were found to replace.';
+  }
+  return `Anonymized ${replaced} value${replaced === 1 ? '' : 's'}.`;
+}
+
 export function anonymizeJson(source: string, options: AnonymizeOptions): EngineResult {
   if (source.trim().length === 0) {
     return {
@@ -186,11 +245,7 @@ export function anonymizeJson(source: string, options: AnonymizeOptions): Engine
     };
   }
 
-  const keySet = new Set(
-    options.keys.map((k) => k.trim().toLowerCase()).filter((k) => k.length > 0),
-  );
-
-  if (options.scope === 'keys' && keySet.size === 0) {
+  if (options.scope === 'keys' && namedKeyCount(options.keys) === 0) {
     return {
       ok: false,
       errors: [
@@ -204,30 +259,7 @@ export function anonymizeJson(source: string, options: AnonymizeOptions): Engine
     };
   }
 
-  const ctx: Ctx = { counter: 1, replaced: 0 };
-
-  const walk = (val: unknown, key: string | null, targeted: boolean): unknown => {
-    const nowTargeted =
-      targeted || (options.scope === 'keys' && key != null && keySet.has(key.toLowerCase()));
-
-    if (Array.isArray(val)) {
-      return val.map((item) => walk(item, null, nowTargeted));
-    }
-    if (val && typeof val === 'object') {
-      const out: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(val as Record<string, unknown>)) {
-        out[k] = walk(v, k, nowTargeted);
-      }
-      return out;
-    }
-    // Scalar leaf.
-    if (options.scope === 'all' || nowTargeted) {
-      return replaceScalar(val, key, options.strategy, ctx);
-    }
-    return val;
-  };
-
-  const result = walk(value, null, false);
+  const { value: result, replaced } = anonymizeValue(value, options);
   const pretty = JSON.stringify(result, null, indentUnit(options.indent));
   const output = applyLineEndings(pretty, {
     indent: options.indent,
@@ -236,16 +268,11 @@ export function anonymizeJson(source: string, options: AnonymizeOptions): Engine
     sortKeys: false,
   });
 
-  const notes: string[] = [];
-  if (ctx.replaced === 0) {
-    notes.push(
-      options.scope === 'keys'
-        ? 'No matching keys were found, so nothing was changed. Check the key names.'
-        : 'No scalar values were found to replace.',
-    );
-  } else {
-    notes.push(`Anonymized ${ctx.replaced} value${ctx.replaced === 1 ? '' : 's'}.`);
-  }
-
-  return { ok: true, output, errors: [], warnings: parsed.warnings, notes };
+  return {
+    ok: true,
+    output,
+    errors: [],
+    warnings: parsed.warnings,
+    notes: [anonymizeNote(replaced, options.scope)],
+  };
 }

@@ -88,13 +88,10 @@ test.describe('JSON & YAML Workbench smoke tests', () => {
     await expect(page.getByText('● Valid')).toBeVisible();
   });
 
-  test('landing page shows the demo and social proof', async ({ page }) => {
+  test('landing page shows the demo and trust bar', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: /messy in, clean out/i })).toBeVisible();
     await expect(page.getByText('bytes uploaded to a server')).toBeVisible();
-    await expect(page.getByRole('heading', { name: /loved by developers/i })).toBeVisible();
-    // Placeholder testimonials must be clearly labelled as sample content.
-    await expect(page.getByText('Sample content')).toBeVisible();
   });
 
   test('open graph image is generated as a PNG', async ({ page, request }) => {

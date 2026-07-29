@@ -4,6 +4,7 @@ import { ThemeProvider, themeInitScript } from '@/components/theme/ThemeProvider
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { ServiceWorkerRegistration } from '@/components/pwa/ServiceWorkerRegistration';
+import { Analytics } from '@vercel/analytics/next';
 import { SITE_NAME, SITE_TAGLINE, SITE_URL } from '@/lib/config';
 
 export const metadata: Metadata = {
@@ -60,6 +61,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </main>
           <Footer />
           <ServiceWorkerRegistration />
+          {/* Privacy-friendly, cookieless page-view analytics (Vercel). Only
+              counts page views — never captures editor/document contents. */}
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>

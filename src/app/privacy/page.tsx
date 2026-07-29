@@ -47,6 +47,14 @@ export default function PrivacyPage() {
           never leave your device.
         </p>
 
+        <h2 className="mt-8 text-xl font-semibold">Analytics</h2>
+        <p className="mt-2 text-slate-700 dark:text-slate-300">
+          We use privacy-friendly, cookieless analytics to count anonymous page views so we can see
+          which tools are useful. It records only the page URL and coarse, aggregate signals — it
+          never uses tracking cookies, never fingerprints you, and never sees the contents of your
+          editor or documents.
+        </p>
+
         <h2 className="mt-8 text-xl font-semibold">Uploaded files are treated as untrusted</h2>
         <p className="mt-2 text-slate-700 dark:text-slate-300">
           Files you upload or drag in are read as text only, restricted to expected extensions, and

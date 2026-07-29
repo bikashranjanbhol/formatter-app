@@ -12,12 +12,12 @@ import {
 import { getTool } from '@/lib/tools';
 import { TOOL_CONTENT } from '@/lib/content';
 import { toolMetadata } from '@/lib/metadata';
-import { SAMPLE_ANON } from '@/lib/samples';
+import { SAMPLE_ANON_YAML } from '@/lib/samples';
 
-export const metadata: Metadata = toolMetadata('json-anonymizer');
+export const metadata: Metadata = toolMetadata('yaml-anonymizer');
 
-const tool = getTool('json-anonymizer');
-const content = TOOL_CONTENT['json-anonymizer'];
+const tool = getTool('yaml-anonymizer');
+const content = TOOL_CONTENT['yaml-anonymizer'];
 
 export default function Page() {
   const crumbs = [
@@ -42,7 +42,11 @@ export default function Page() {
       </div>
 
       <div className="mt-4">
-        <AnonymizerWorkbench language="json" operationKind="anonymize-json" sample={SAMPLE_ANON} />
+        <AnonymizerWorkbench
+          language="yaml"
+          operationKind="anonymize-yaml"
+          sample={SAMPLE_ANON_YAML}
+        />
       </div>
 
       <div className="mx-auto mt-12 max-w-7xl px-4">
@@ -50,7 +54,7 @@ export default function Page() {
           <div className="space-y-10">
             <section aria-labelledby="how-to">
               <h2 id="how-to" className="text-xl font-semibold">
-                How to use the JSON anonymizer
+                How to use the YAML anonymizer
               </h2>
               <ol className="mt-3 list-decimal space-y-2 pl-5 text-slate-700 dark:text-slate-300">
                 {content.instructions.map((step, i) => (

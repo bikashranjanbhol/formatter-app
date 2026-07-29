@@ -260,6 +260,38 @@ export const TOOL_CONTENT: Record<ToolMode, ToolContent> = {
       },
     ],
   },
+  'yaml-anonymizer': {
+    instructions: [
+      'Paste or upload the YAML you want to sanitize.',
+      'Choose a scope: replace All values, or only specific keys (type key names like email, name, ssn).',
+      'Pick a style: Realistic fake data, Redact (***), or Type placeholder.',
+      'Press Anonymize, then copy or download the safe-to-share result. Your original data never leaves the browser.',
+    ],
+    example: {
+      title: 'Masking secrets in a config file',
+      input: 'db:\n  host: prod-db.corp.internal\n  password: s3cr3t\n  user: admin',
+      output: 'db:\n  host: lorem\n  password: "***REDACTED***"\n  user: user1',
+      note: 'Secret-like keys (password, token, apiKey…) are always fully redacted. Comments and anchors are not preserved, since anonymizing re-serializes the document.',
+    },
+    faq: [
+      {
+        q: 'Is my YAML sent anywhere to be anonymized?',
+        a: 'No. It is parsed and rewritten entirely in your browser. Your original values never leave your device.',
+      },
+      {
+        q: 'Are comments and anchors preserved?',
+        a: 'No. Anonymizing re-serializes YAML from its data model, so comments, anchors, and aliases are dropped — the tool warns you about this. Use the YAML formatter if you need lossless formatting.',
+      },
+      {
+        q: 'Can I target only certain keys?',
+        a: 'Yes. Use the “Only these keys” scope and list key names such as password, email, or token. Matching is case-insensitive and works at any depth.',
+      },
+      {
+        q: 'What replacement styles are available?',
+        a: 'Realistic fake data (key-aware), Redact (mask with ***), and Type placeholder. Secret-like keys are always fully redacted.',
+      },
+    ],
+  },
   'json-schema-validator': {
     instructions: [
       'Put your document (JSON) in the input editor and your JSON Schema in the schema editor.',

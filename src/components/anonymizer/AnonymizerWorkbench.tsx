@@ -23,12 +23,17 @@ import { run, type RunHandle } from '@/lib/runner';
 import { computeStats } from '@/lib/text';
 import { copyToClipboard } from '@/lib/clipboard';
 import { readTextFile, downloadText } from '@/lib/files/upload';
-import { ACCEPTED_JSON_EXTENSIONS, MAX_FILE_BYTES } from '@/lib/config';
-import { SAMPLE_ANON } from '@/lib/samples';
+import { ACCEPTED_JSON_EXTENSIONS, ACCEPTED_YAML_EXTENSIONS, MAX_FILE_BYTES } from '@/lib/config';
 
 const OPTIONS_KEY = 'workbench:anon-options';
 
 type MobileTab = 'input' | 'output';
+
+export interface AnonymizerWorkbenchProps {
+  language: 'json' | 'yaml';
+  operationKind: 'anonymize-json' | 'anonymize-yaml';
+  sample: string;
+}
 
 interface AnonOptions {
   scope: AnonymizeScope;
@@ -44,7 +49,14 @@ const DEFAULT_OPTIONS: AnonOptions = {
   indent: 'two-space',
 };
 
-export function AnonymizerWorkbench() {
+export function AnonymizerWorkbench({ language, operationKind, sample }: AnonymizerWorkbenchProps) {
+  const acceptedExtensions =
+    language === 'json' ? ACCEPTED_JSON_EXTENSIONS : ACCEPTED_YAML_EXTENSIONS;
+  const langLabel = language.toUpperCase();
+  const langBadge = language;
+  const downloadName = language === 'json' ? 'anonymized.json' : 'anonymized.yaml';
+  const downloadMime = language === 'json' ? 'application/json' : 'application/yaml';
+
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [errors, setErrors] = useState<EngineError[]>([]);
@@ -96,7 +108,7 @@ export function AnonymizerWorkbench() {
     handleRef.current?.cancel();
     const started = performance.now();
     const handle = run({
-      kind: 'anonymize-json',
+      kind: operationKind,
       source: input,
       options: {
         scope: options.scope,
@@ -138,7 +150,7 @@ export function AnonymizerWorkbench() {
       setBusy(false);
       handleRef.current = null;
     }
-  }, [input, options, announce]);
+  }, [input, options, operationKind, announce]);
 
   const handleCopy = useCallback(async () => {
     if (!output) {
@@ -155,16 +167,16 @@ export function AnonymizerWorkbench() {
       return;
     }
     try {
-      downloadText(output, 'anonymized.json', 'application/json');
+      downloadText(output, downloadName, downloadMime);
       announce('Download started.');
     } catch {
       announce('Download failed. Your browser may have blocked it.');
     }
-  }, [output, announce]);
+  }, [output, downloadName, downloadMime, announce]);
 
   const handleFile = useCallback(
     async (file: File) => {
-      const res = await readTextFile(file, [...ACCEPTED_JSON_EXTENSIONS, '.txt'], MAX_FILE_BYTES);
+      const res = await readTextFile(file, [...acceptedExtensions, '.txt'], MAX_FILE_BYTES);
       if (res.ok && res.content !== undefined) {
         setInput(res.content);
         announce(`Loaded ${file.name}.`);
@@ -174,7 +186,7 @@ export function AnonymizerWorkbench() {
         setErrors([{ message: res.error ?? 'Could not read the file.', severity: 'error' }]);
       }
     },
-    [announce],
+    [acceptedExtensions, announce],
   );
 
   const cancel = useCallback(() => {
@@ -246,15 +258,15 @@ export function AnonymizerWorkbench() {
           </button>
           <label
             className="btn cursor-pointer border-transparent bg-transparent shadow-none hover:bg-slate-100 dark:hover:bg-slate-800"
-            title="Upload a JSON file"
+            title={`Upload a ${langLabel} file`}
           >
             <UploadIcon />
             <span className="hidden sm:inline">Upload</span>
-            <span className="sr-only">Upload a JSON file</span>
+            <span className="sr-only">Upload a {langLabel} file</span>
             <input
               type="file"
               className="sr-only"
-              accept={[...ACCEPTED_JSON_EXTENSIONS, '.txt'].join(',')}
+              accept={[...acceptedExtensions, '.txt'].join(',')}
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 if (f) void handleFile(f);
@@ -266,7 +278,7 @@ export function AnonymizerWorkbench() {
             type="button"
             className="btn border-transparent bg-transparent shadow-none hover:bg-slate-100 dark:hover:bg-slate-800"
             onClick={() => {
-              setInput(SAMPLE_ANON);
+              setInput(sample);
               announce('Sample loaded.');
               setMobileTab('input');
             }}
@@ -410,7 +422,7 @@ export function AnonymizerWorkbench() {
                 Input
               </span>
               <span className="rounded-md bg-slate-200/70 px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                json
+                {langBadge}
               </span>
             </div>
             {dragOver && (
@@ -423,8 +435,8 @@ export function AnonymizerWorkbench() {
             <CodeEditor
               value={input}
               onChange={setInput}
-              language="json"
-              ariaLabel="JSON input"
+              language={language}
+              ariaLabel={`${langLabel} input`}
               editorRef={editorRef}
             />
           </div>
@@ -444,17 +456,17 @@ export function AnonymizerWorkbench() {
               Anonymized output
             </span>
             <span className="rounded-md bg-slate-200/70 px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-              json
+              {langBadge}
             </span>
           </div>
           <div className="min-h-0 flex-1">
-            <CodeEditor value={output} language="json" readOnly ariaLabel="Anonymized output" />
+            <CodeEditor value={output} language={language} readOnly ariaLabel="Anonymized output" />
           </div>
         </section>
       </div>
 
       <StatusBar
-        documentType="JSON"
+        documentType={langLabel}
         validity={validity}
         stats={stats}
         processingMs={processingMs}

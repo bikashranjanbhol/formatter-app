@@ -32,6 +32,27 @@ export const SAMPLE_ANON = `{
   "notes": ["Follow up about invoice", "VIP customer"]
 }`;
 
+export const SAMPLE_ANON_YAML = `customer:
+  id: 84213
+  firstName: Ada
+  lastName: Lovelace
+  email: ada.lovelace@contoso.com
+  phone: "+1-202-555-0173"
+  ssn: "123-45-6789"
+  address:
+    street: 10 Downing St
+    city: London
+    country: UK
+account:
+  apiKey: sk_live_9f8a7b6c5d4e3f2a1b0c
+  balance: 4200.5
+  active: true
+  createdAt: 2024-06-01T09:30:00Z
+notes:
+  - Follow up about invoice
+  - VIP customer
+`;
+
 export const SAMPLE_JSON_MINIFIED =
   '{"product":"JSON & YAML Workbench","private":true,"features":["format","validate","convert"],"limits":{"maxFileMb":10}}';
 

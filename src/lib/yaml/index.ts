@@ -13,6 +13,12 @@ import {
 } from 'yaml';
 import type { EngineError, EngineResult, FormatOptions } from '../types';
 import { applyLineEndings, indentWidth } from '../text';
+import {
+  anonymizeValue,
+  anonymizeNote,
+  namedKeyCount,
+  type AnonymizeOptions,
+} from '../json/anonymize';
 
 /**
  * YAML engine built on the `yaml` package. It preserves comments, anchors,
@@ -305,6 +311,109 @@ export function jsonToYaml(source: string, options: FormatOptions): EngineResult
     .replace(/\n$/, '');
   const output = applyLineEndings(rendered, options);
   return { ok: true, output, errors: [], warnings: [] };
+}
+
+/**
+ * Anonymize YAML by parsing to the data model, replacing values, and
+ * re-serializing. Because it goes through the data model, comments and anchors
+ * are not preserved — we warn about that, since anonymization is a destructive
+ * sanitizing operation by nature.
+ */
+export function anonymizeYaml(source: string, options: AnonymizeOptions): EngineResult {
+  if (source.trim().length === 0) {
+    return {
+      ok: false,
+      errors: [{ message: 'Nothing to anonymize — the input is empty.', severity: 'error' }],
+      warnings: [],
+    };
+  }
+
+  const docs = parseAllDocuments(source, PARSE_OPTIONS);
+  const errors: EngineError[] = [];
+  for (const doc of docs) errors.push(...doc.errors.map((e) => toEngineError(e, 'error')));
+  if (errors.length > 0) {
+    return { ok: false, errors, warnings: [] };
+  }
+
+  if (options.scope === 'keys' && namedKeyCount(options.keys) === 0) {
+    return {
+      ok: false,
+      errors: [
+        {
+          message: 'Enter at least one key to anonymize, or switch the scope to “All values”.',
+          severity: 'error',
+          code: 'no-keys',
+        },
+      ],
+      warnings: [],
+    };
+  }
+
+  let jsValue: unknown;
+  try {
+    jsValue =
+      docs.length === 1
+        ? docs[0]!.toJS({ maxAliasCount: MAX_ALIAS_COUNT })
+        : docs.map((d) => d.toJS({ maxAliasCount: MAX_ALIAS_COUNT }));
+  } catch (err) {
+    return {
+      ok: false,
+      errors: [
+        {
+          message:
+            err instanceof Error ? `Could not read this YAML: ${err.message}` : 'Invalid YAML.',
+          severity: 'error',
+        },
+      ],
+      warnings: [],
+    };
+  }
+
+  const { value: result, replaced } = anonymizeValue(jsValue, options);
+  const formatLike: FormatOptions = {
+    indent: options.indent,
+    lineEnding: options.lineEnding,
+    finalNewline: options.finalNewline,
+    sortKeys: false,
+    yamlVersion: '1.2',
+  };
+  const toStringOptions: ToStringOptions = {
+    indent: Math.max(2, indentWidth(options.indent)),
+    lineWidth: 0,
+  };
+
+  let rendered: string;
+  if (docs.length > 1 && Array.isArray(result)) {
+    rendered = result
+      .map((v) =>
+        new Document(v, optionsWithVersion(formatLike))
+          .toString(toStringOptions)
+          .replace(/\n$/, ''),
+      )
+      .join('\n---\n');
+  } else {
+    rendered = new Document(result, optionsWithVersion(formatLike))
+      .toString(toStringOptions)
+      .replace(/\n$/, '');
+  }
+
+  const output = applyLineEndings(rendered, formatLike);
+  const warnings: EngineError[] = [
+    {
+      message:
+        'Anonymizing YAML re-serializes from the data model, so comments and anchors are not preserved.',
+      severity: 'warning',
+      code: 'yaml-roundtrip',
+    },
+  ];
+
+  return {
+    ok: true,
+    output,
+    errors: [],
+    warnings,
+    notes: [anonymizeNote(replaced, options.scope)],
+  };
 }
 
 /** Parse YAML to a plain JS value for the tree view, or throw on error. */

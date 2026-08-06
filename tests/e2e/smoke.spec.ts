@@ -88,6 +88,61 @@ test.describe('JSON & YAML Workbench smoke tests', () => {
     await expect(page.getByText('● Valid')).toBeVisible();
   });
 
+  test('JSON diff compares two documents structurally', async ({ page }) => {
+    await page.goto('/json-diff');
+    await expect(page.locator('.cm-content').first()).toBeVisible();
+
+    await page.locator('.cm-content').nth(0).click();
+    await page.keyboard.type('{"a":1,"b":2}');
+    await page.locator('.cm-content').nth(1).click();
+    await page.keyboard.type('{"a":9,"c":3}');
+    await page.getByRole('button', { name: /^Compare/ }).click();
+
+    const summary = page.getByLabel('Difference summary');
+    await expect(summary).toContainText('1 added');
+    await expect(summary).toContainText('1 removed');
+    await expect(summary).toContainText('1 changed');
+
+    // The generated JSON Patch is available and correct.
+    await page.getByRole('button', { name: 'Patch', exact: true }).click();
+    const patch = page.locator('.cm-content').nth(2);
+    await expect(patch).toContainText('"op": "replace"');
+    await expect(patch).toContainText('"path": "/a"');
+  });
+
+  test('JSON diff ignores formatting and key order', async ({ page }) => {
+    await page.goto('/json-diff');
+    await expect(page.locator('.cm-content').first()).toBeVisible();
+
+    await page.locator('.cm-content').nth(0).click();
+    await page.keyboard.type('{"a":1,"b":2}');
+    await page.locator('.cm-content').nth(1).click();
+    await page.keyboard.type('{"b":2,   "a":1}');
+    await page.getByRole('button', { name: /^Compare/ }).click();
+
+    await expect(page.getByText('✓ The documents are identical.')).toBeVisible();
+  });
+
+  test('YAML diff reports a changed value and offers a patch', async ({ page }) => {
+    await page.goto('/yaml-diff');
+    await expect(page.locator('.cm-content').first()).toBeVisible();
+
+    await page.getByRole('button', { name: /sample/i }).click();
+    await page.getByRole('button', { name: /^Compare/ }).click();
+
+    // The samples differ in version, replicas, limits, region, and owner.
+    await expect(page.getByLabel('Difference summary')).toContainText('changed');
+    await expect(page.getByRole('tree', { name: /comparison/i })).toContainText('replicas');
+  });
+
+  test('diff mobile layout exposes the three panels', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 800 });
+    await page.goto('/json-diff');
+    await expect(page.getByRole('tab', { name: 'left' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'right' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Differences' })).toBeVisible();
+  });
+
   test('landing page shows the demo and trust bar', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: /messy in, clean out/i })).toBeVisible();

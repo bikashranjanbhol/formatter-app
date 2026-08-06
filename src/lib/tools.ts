@@ -10,10 +10,12 @@ export type ToolMode =
   | 'json-minifier'
   | 'json-to-yaml'
   | 'json-anonymizer'
+  | 'json-diff'
   | 'yaml-formatter'
   | 'yaml-validator'
   | 'yaml-to-json'
   | 'yaml-anonymizer'
+  | 'yaml-diff'
   | 'json-schema-validator';
 
 export interface ToolMeta {
@@ -107,6 +109,18 @@ export const TOOLS: ToolMeta[] = [
     group: 'JSON',
   },
   {
+    slug: 'json-diff',
+    nav: 'JSON Diff',
+    title: 'JSON Diff & Compare',
+    seoTitle: 'JSON Diff — Structural Compare, In-Browser',
+    description:
+      'Compare two JSON documents structurally and see exactly which keys were added, removed, or changed. Export the difference as a JSON Patch. Nothing is uploaded.',
+    intro:
+      'Compare two JSON documents and see precisely what changed. This is a structural diff, not a text diff: reformatting, whitespace, and key order never show up as differences, so you only see real changes. Match array items by position or by an identity key like id, then export the result as an RFC 6902 JSON Patch. Both documents stay in your browser.',
+    language: 'json',
+    group: 'JSON',
+  },
+  {
     slug: 'yaml-formatter',
     nav: 'YAML Formatter',
     title: 'YAML Formatter',
@@ -151,6 +165,18 @@ export const TOOLS: ToolMeta[] = [
       'Replace sensitive YAML values with realistic dummy data or redact them — all values or only specific keys. Runs entirely in your browser; nothing is uploaded.',
     intro:
       'Sanitize YAML config or data before sharing it. Swap real values for realistic fake data, mask them with ***, or replace only the keys you choose. Everything happens locally in your browser, so the original data never leaves your device. Note: anonymizing re-serializes YAML, so comments and anchors are not preserved.',
+    language: 'yaml',
+    group: 'YAML',
+  },
+  {
+    slug: 'yaml-diff',
+    nav: 'YAML Diff',
+    title: 'YAML Diff & Compare',
+    seoTitle: 'YAML Diff — Structural Compare, In-Browser',
+    description:
+      'Compare two YAML files structurally and see which keys were added, removed, or changed. Ideal for config drift and Kubernetes manifests. Runs entirely in your browser.',
+    intro:
+      'Compare two YAML documents by structure rather than by line. Indentation changes, quoting style, and key order are not differences, so you see only what actually changed — which is what you want when checking config drift between two environments. Match list items by position or by an identity key, and export the result as a JSON Patch.',
     language: 'yaml',
     group: 'YAML',
   },

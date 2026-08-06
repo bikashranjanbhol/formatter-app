@@ -73,13 +73,17 @@ function resolveVariant(mode: ToolMode): WorkbenchConfig {
         sample: SAMPLE_JSON,
         showSortKeys: false,
       });
-    // The anonymizer has its own dedicated component (AnonymizerWorkbench) and
-    // does not use the generic Workbench; this case only satisfies the
-    // exhaustive switch below.
+    // The anonymizer and diff tools have their own dedicated components
+    // (AnonymizerWorkbench, DiffWorkbench) and do not use the generic
+    // Workbench; these cases only satisfy the exhaustive switch below.
     case 'json-anonymizer':
       return base('json', 'json', 'format', 'Anonymize', { sample: SAMPLE_JSON });
     case 'yaml-anonymizer':
       return base('yaml', 'yaml', 'format', 'Anonymize', { sample: SAMPLE_JSON });
+    case 'json-diff':
+      return base('json', 'json', 'format', 'Compare', { sample: SAMPLE_JSON });
+    case 'yaml-diff':
+      return base('yaml', 'yaml', 'format', 'Compare', { sample: SAMPLE_YAML });
     default: {
       const _exhaustive: never = mode;
       return _exhaustive;

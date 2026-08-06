@@ -104,8 +104,14 @@ export function run(op: EngineOperation): RunHandle {
   };
 }
 
+/**
+ * Total input size for an operation, across every input it takes. Multi-input
+ * operations (schema validation, diff) must count both sides, otherwise a pair
+ * of large documents would be compared on the main thread and freeze the UI.
+ */
 function estimateSize(op: EngineOperation): number {
   if ('source' in op) return op.source.length;
   if ('instance' in op) return op.instance.length + op.schema.length;
+  if ('left' in op) return op.left.length + op.right.length;
   return 0;
 }

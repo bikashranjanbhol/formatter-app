@@ -128,6 +128,65 @@ test.describe('JSON & YAML Workbench smoke tests', () => {
     await expect(page.getByText('● Valid')).toBeVisible();
   });
 
+  test('formatting settings are shareable via the URL', async ({ page }) => {
+    // A settings link opens the tool configured as its author intended.
+    await page.goto('/json-formatter?indent=4&sort=1');
+    const editor = page.locator('.cm-content').first();
+    await expect(editor).toBeVisible();
+    await editor.click();
+    await page.keyboard.type('{"b":2,"a":1}');
+    await page.getByRole('button', { name: /^Format/ }).click();
+
+    const output = page.locator('.cm-content').nth(1);
+    await expect(output).toContainText('    "a": 1');
+    // sort=1 was honoured, so "a" precedes "b".
+    await expect(output).toContainText(/"a": 1[\s\S]*"b": 2/);
+  });
+
+  test('changing a setting updates the URL, and never carries the document', async ({ page }) => {
+    await page.goto('/json-formatter');
+    await expect(page.locator('.cm-content').first()).toBeVisible();
+    await page.locator('.cm-content').first().click();
+    await page.keyboard.type('{"secret":"do-not-share"}');
+
+    await page.getByLabel('Indent').selectOption('tab');
+    await expect(page).toHaveURL(/indent=tab/);
+    expect(page.url()).not.toContain('secret');
+    expect(page.url()).not.toContain('do-not-share');
+  });
+
+  test('presets switch formatting settings in one click', async ({ page }) => {
+    await page.goto('/json-formatter');
+    await expect(page.locator('.cm-content').first()).toBeVisible();
+
+    await page.getByLabel('Preset').selectOption('Four-space');
+    await expect(page.getByLabel('Indent')).toHaveValue('four-space');
+
+    await page.getByLabel('Preset').selectOption('Tabs');
+    await expect(page.getByLabel('Indent')).toHaveValue('tab');
+    await expect(page).toHaveURL(/indent=tab/);
+  });
+
+  test('a custom preset can be saved and reselected', async ({ page }) => {
+    await page.goto('/json-formatter');
+    await expect(page.locator('.cm-content').first()).toBeVisible();
+
+    await page.getByLabel('Indent').selectOption('four-space');
+    await page.getByLabel('Line endings').selectOption('crlf');
+    await page.getByRole('button', { name: 'Save as…' }).click();
+    await page.getByLabel('Preset name').fill('Team style');
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+
+    await expect(page.getByLabel('Preset')).toHaveValue('Team style');
+
+    // Switch away and back again.
+    await page.getByLabel('Preset').selectOption('Tabs');
+    await expect(page.getByLabel('Indent')).toHaveValue('tab');
+    await page.getByLabel('Preset').selectOption('Team style');
+    await expect(page.getByLabel('Indent')).toHaveValue('four-space');
+    await expect(page.getByLabel('Line endings')).toHaveValue('crlf');
+  });
+
   test('JSON diff compares two documents structurally', async ({ page }) => {
     await page.goto('/json-diff');
     await expect(page.locator('.cm-content').first()).toBeVisible();

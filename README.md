@@ -60,6 +60,10 @@ Built with Next.js (App Router), React, TypeScript (strict), Tailwind CSS, CodeM
   RFC 6902 JSON Patch and RFC 7386 JSON Merge Patch.
 - **YAML**: YAML 1.2 parse/validate/format, multiple documents, comments/anchors/aliases/tags/
   block scalars preserved, YAML → JSON with warnings, alias-expansion (billion-laughs) protection.
+- **Presets & shareable settings**: named bundles of formatting options (five built in, plus your
+  own, saved to `localStorage`), switchable in one click. The current settings are mirrored into the
+  URL query string, so `?indent=4&sort=1` is a link a team can share to standardise formatting
+  without an account. **Only settings are encoded — document contents never touch the URL.**
 - **Editor UX**: CodeMirror 6, resizable two-panel desktop layout, mobile input/output tabs,
   status bar (type, validity, lines, chars, bytes, processing time), light/dark/system themes,
   keyboard shortcuts + help dialog, drag-and-drop file upload, download, undo/redo, cancellation.
@@ -82,8 +86,12 @@ formatting, validation, conversion, searching, or tree visualization.
   browser (main thread or a Web Worker — both on your device).
 - **Never**: transmit, log, or store document contents; include them in analytics; persist them by
   default.
-- **Only** UI preferences (theme, indentation, etc.) are stored, in `localStorage`, never leaving
-  your device.
+- **Only** UI preferences (theme, indentation, saved formatting presets, comparison options) are
+  stored, in `localStorage`, never leaving your device.
+- The URL query string carries **formatting options only** (`indent`, `eol`, `nl`, `sort`, `yaml`).
+  Document contents are never encoded into a link, so pasting a settings link into a chat cannot
+  leak data. This is enforced by `optionsToParams` in `src/lib/presets.ts`, which has a fixed,
+  tested set of keys.
 - Uploaded files are treated as **untrusted**: read as text only, restricted to expected
   extensions, and capped at a configurable size limit.
 - A **Content Security Policy** (see `next.config.mjs`) restricts `connect-src` to `'self'`, so the

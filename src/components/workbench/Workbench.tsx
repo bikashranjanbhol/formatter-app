@@ -5,6 +5,7 @@ import type { ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import { CodeEditor } from '../editor/CodeEditor';
 import { StatusBar, type Validity } from '../editor/StatusBar';
 import { Toolbar } from '../editor/Toolbar';
+import { PresetPicker } from '../editor/PresetPicker';
 import { HelpDialog } from '../editor/HelpDialog';
 import { ErrorList } from '../validation/ErrorList';
 import { RepairPanel } from '../validation/RepairPanel';
@@ -36,6 +37,7 @@ import type { EngineOperation, EngineResponse, TreeResult, SchemaResult } from '
 import type { EngineResult } from '@/lib/types';
 import { run, type RunHandle } from '@/lib/runner';
 import type { RepairResult } from '@/lib/json/repair';
+import { coerceOptions, hasOptionParams, optionsFromParams, optionsToParams } from '@/lib/presets';
 import { computeStats } from '@/lib/text';
 import { copyToClipboard } from '@/lib/clipboard';
 import { readTextFile, downloadText } from '@/lib/files/upload';
@@ -76,27 +78,51 @@ export function Workbench({ mode }: { mode: ToolMode }) {
 
   const stats = useMemo(() => computeStats(input), [input]);
 
-  // Load persisted UI preferences (never document contents).
+  // Load persisted UI preferences (never document contents). A query string
+  // wins over stored preferences, so a shared settings link opens as its author
+  // intended without permanently overwriting the visitor's own defaults until
+  // they change something.
   useEffect(() => {
+    let stored = DEFAULT_FORMAT_OPTIONS;
     try {
       const raw = localStorage.getItem(OPTIONS_STORAGE_KEY);
-      if (raw) setOptions({ ...DEFAULT_FORMAT_OPTIONS, ...JSON.parse(raw) });
+      if (raw) stored = coerceOptions(JSON.parse(raw));
     } catch {
       /* ignore */
     }
+    const params = new URLSearchParams(window.location.search);
+    setOptions(hasOptionParams(params) ? optionsFromParams(params, stored) : stored);
   }, []);
 
-  const patchOptions = useCallback((patch: Partial<FormatOptions>) => {
-    setOptions((prev) => {
-      const next = { ...prev, ...patch };
-      try {
-        localStorage.setItem(OPTIONS_STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
+  /**
+   * Persist the options and mirror them in the URL, so the address bar is
+   * always a shareable description of the current settings. Only settings are
+   * encoded — document contents never touch the URL.
+   */
+  const applyOptions = useCallback((next: FormatOptions) => {
+    setOptions(next);
+    try {
+      localStorage.setItem(OPTIONS_STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      /* ignore */
+    }
+    try {
+      const params = optionsToParams(next);
+      const query = params.toString();
+      window.history.replaceState(
+        null,
+        '',
+        `${window.location.pathname}${query ? `?${query}` : ''}`,
+      );
+    } catch {
+      /* history may be unavailable; settings still apply */
+    }
   }, []);
+
+  const patchOptions = useCallback(
+    (patch: Partial<FormatOptions>) => applyOptions({ ...options, ...patch }),
+    [options, applyOptions],
+  );
 
   const announce = useCallback((message: string) => {
     setNotice(message);
@@ -320,6 +346,21 @@ export function Workbench({ mode }: { mode: ToolMode }) {
     const res = await copyToClipboard(text);
     announce(res.ok ? 'Copied to clipboard.' : (res.error ?? 'Copy failed.'));
   }, [config.variant, input, output, announce]);
+
+  /**
+   * Copy a link to this tool with the current settings. The link carries
+   * formatting options only — the document is never encoded into it.
+   */
+  const copySettingsLink = useCallback(async () => {
+    const query = optionsToParams(options).toString();
+    const url = `${window.location.origin}${window.location.pathname}${query ? `?${query}` : ''}`;
+    const res = await copyToClipboard(url);
+    announce(
+      res.ok
+        ? 'Settings link copied. It carries your formatting options only, never your document.'
+        : (res.error ?? 'Copy failed.'),
+    );
+  }, [options, announce]);
 
   const handleDownload = useCallback(() => {
     const text =
@@ -570,13 +611,21 @@ export function Workbench({ mode }: { mode: ToolMode }) {
 
       {/* Formatting settings */}
       {(config.variant === 'format' || config.variant === 'convert') && (
-        <div className="mb-3 rounded-xl border border-slate-200/70 bg-white/50 px-3 py-2 backdrop-blur dark:border-slate-800 dark:bg-slate-900/40">
+        <div className="mb-3 space-y-2 rounded-xl border border-slate-200/70 bg-white/50 px-3 py-2 backdrop-blur dark:border-slate-800 dark:bg-slate-900/40">
           <Toolbar
             options={options}
             onOptionsChange={patchOptions}
             showYamlVersion={config.showYamlVersion}
             showSortKeys={config.showSortKeys}
           />
+          <div className="border-t border-slate-200/70 pt-2 dark:border-slate-800">
+            <PresetPicker
+              options={options}
+              onApply={applyOptions}
+              onShare={() => void copySettingsLink()}
+              onAnnounce={announce}
+            />
+          </div>
         </div>
       )}
 

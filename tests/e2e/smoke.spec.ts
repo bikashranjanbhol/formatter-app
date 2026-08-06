@@ -128,6 +128,34 @@ test.describe('JSON & YAML Workbench smoke tests', () => {
     await expect(page.getByText('● Valid')).toBeVisible();
   });
 
+  test('pasting the wrong format suggests the right tool', async ({ page }) => {
+    await page.goto('/json-formatter');
+    const editor = page.locator('.cm-content').first();
+    await expect(editor).toBeVisible();
+    await editor.click();
+    await page.keyboard.type('service: checkout\nreplicas: 3\nregion: eu-west-1');
+
+    const hint = page.getByText(/This looks like/);
+    await expect(hint).toBeVisible();
+    await expect(hint).toContainText('YAML');
+    await expect(page.getByRole('link', { name: /Open the YAML Formatter/ })).toBeVisible();
+
+    // The suggestion can be dismissed and stays out of the way.
+    await page.getByRole('button', { name: 'Dismiss' }).click();
+    await expect(hint).toBeHidden();
+  });
+
+  test('no format suggestion appears for the expected format', async ({ page }) => {
+    await page.goto('/json-formatter');
+    const editor = page.locator('.cm-content').first();
+    await expect(editor).toBeVisible();
+    await editor.click();
+    await page.keyboard.type('{"service":"checkout","replicas":3}');
+    await page.getByRole('button', { name: /^Format/ }).click();
+    await expect(page.getByText('● Valid')).toBeVisible();
+    await expect(page.getByText(/This looks like/)).toBeHidden();
+  });
+
   test('formatting settings are shareable via the URL', async ({ page }) => {
     // A settings link opens the tool configured as its author intended.
     await page.goto('/json-formatter?indent=4&sort=1');

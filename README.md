@@ -60,6 +60,9 @@ Built with Next.js (App Router), React, TypeScript (strict), Tailwind CSS, CodeM
   RFC 6902 JSON Patch and RFC 7386 JSON Merge Patch.
 - **YAML**: YAML 1.2 parse/validate/format, multiple documents, comments/anchors/aliases/tags/
   block scalars preserved, YAML → JSON with warnings, alias-expansion (billion-laughs) protection.
+- **Format auto-detection**: paste YAML into a JSON tool (or CSV, XML, TOML, or NDJSON into either)
+  and the page says what it looks like and links to the tool that handles it, instead of showing a
+  parse error. The suggestion only appears on a confident detection and is dismissible.
 - **Presets & shareable settings**: named bundles of formatting options (five built in, plus your
   own, saved to `localStorage`), switchable in one click. The current settings are mirrored into the
   URL query string, so `?indent=4&sort=1` is a link a team can share to standardise formatting

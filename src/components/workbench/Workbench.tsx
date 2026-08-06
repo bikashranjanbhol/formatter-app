@@ -26,6 +26,8 @@ import {
   CancelIcon,
 } from '../editor/icons';
 import { resolveConfig } from './config';
+import { FormatHint } from './FormatHint';
+import { detectFormat } from '@/lib/detect';
 import type { ToolMode } from '@/lib/tools';
 import {
   DEFAULT_FORMAT_OPTIONS,
@@ -67,6 +69,7 @@ export function Workbench({ mode }: { mode: ToolMode }) {
   const [helpOpen, setHelpOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>('input');
   const [dragOver, setDragOver] = useState(false);
+  const [hintDismissed, setHintDismissed] = useState(false);
 
   const [options, setOptions] = useState<FormatOptions>(DEFAULT_FORMAT_OPTIONS);
 
@@ -77,6 +80,23 @@ export function Workbench({ mode }: { mode: ToolMode }) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const stats = useMemo(() => computeStats(input), [input]);
+
+  /**
+   * Suggest a different tool when the pasted document clearly is not what this
+   * page handles. Only fires on a confident detection, and the suggestion is
+   * dismissible — a wrong guess must never get in the way of the editor.
+   */
+  const detection = useMemo(() => {
+    if (input.trim().length < 8) return null;
+    const result = detectFormat(input);
+    if (result.confidence < 0.75) return null;
+    const detectedLanguage =
+      result.format === 'json' || result.format === 'json-lines' ? 'json' : result.format;
+    return detectedLanguage === config.inputLanguage ? null : result;
+  }, [input, config.inputLanguage]);
+
+  // Re-offer the hint whenever the detected format changes.
+  useEffect(() => setHintDismissed(false), [detection?.format]);
 
   // Load persisted UI preferences (never document contents). A query string
   // wins over stored preferences, so a shared settings link opens as its author
@@ -627,6 +647,14 @@ export function Workbench({ mode }: { mode: ToolMode }) {
             />
           </div>
         </div>
+      )}
+
+      {detection && !hintDismissed && (
+        <FormatHint
+          detection={detection}
+          expected={config.inputLanguage}
+          onDismiss={() => setHintDismissed(true)}
+        />
       )}
 
       <AdSlot size="leaderboard" className="mb-3" />

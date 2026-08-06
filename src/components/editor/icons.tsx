@@ -143,3 +143,21 @@ export const CollapseIcon = (p: IconProps) => (
     <line x1="3" y1="21" x2="10" y2="14" />
   </Svg>
 );
+
+export const DiffIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <line x1="12" y1="4" x2="12" y2="20" />
+    <line x1="4" y1="9" x2="8" y2="9" />
+    <line x1="6" y1="7" x2="6" y2="11" />
+    <line x1="16" y1="15" x2="20" y2="15" />
+  </Svg>
+);
+
+export const SwapIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <polyline points="16 3 20 7 16 11" />
+    <line x1="20" y1="7" x2="4" y2="7" />
+    <polyline points="8 13 4 17 8 21" />
+    <line x1="4" y1="17" x2="20" y2="17" />
+  </Svg>
+);

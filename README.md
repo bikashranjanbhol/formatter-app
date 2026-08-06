@@ -40,6 +40,8 @@ Built with Next.js (App Router), React, TypeScript (strict), Tailwind CSS, CodeM
 | `/json-viewer`                 | Collapsible tree view with search, expand/collapse all, copy value / JSON Pointer path |
 | `/json-minifier`               | Minify JSON (validated first)                                                          |
 | `/json-to-yaml`                | Convert JSON → YAML 1.2, preserving key order                                          |
+| `/json-diff`                   | Structural JSON compare with JSON Patch / Merge Patch export                           |
+| `/yaml-diff`                   | Structural YAML compare (config drift, manifests) with patch export                    |
 | `/yaml-formatter`              | Format YAML 1.2, preserving comments, anchors, aliases, tags, key order                |
 | `/yaml-validator`              | Validate YAML 1.2 with exact error locations; multi-document aware                     |
 | `/yaml-to-json`                | Convert YAML → JSON with honest lossy-feature warnings                                 |
@@ -51,11 +53,28 @@ Built with Next.js (App Router), React, TypeScript (strict), Tailwind CSS, CodeM
 
 - **JSON**: format, validate, minify, tree view, JSON Pointer paths, duplicate-key detection,
   large-integer precision warnings, JSON → YAML, JSON Schema validation.
+- **Diff**: structural (data, not text) comparison of two JSON or YAML documents — reformatting,
+  whitespace, and key order are never reported as changes. Arrays can be matched by position, by an
+  identity key (so an insertion stays one insertion instead of cascading), or as unordered sets.
+  Optional case-insensitive, whitespace-insensitive, and null-equals-missing comparison. Exports
+  RFC 6902 JSON Patch and RFC 7386 JSON Merge Patch.
 - **YAML**: YAML 1.2 parse/validate/format, multiple documents, comments/anchors/aliases/tags/
   block scalars preserved, YAML → JSON with warnings, alias-expansion (billion-laughs) protection.
+- **Format auto-detection**: paste YAML into a JSON tool (or CSV, XML, TOML, or NDJSON into either)
+  and the page says what it looks like and links to the tool that handles it, instead of showing a
+  parse error. The suggestion only appears on a confident detection and is dismissible.
+- **Presets & shareable settings**: named bundles of formatting options (five built in, plus your
+  own, saved to `localStorage`), switchable in one click. The current settings are mirrored into the
+  URL query string, so `?indent=4&sort=1` is a link a team can share to standardise formatting
+  without an account. **Only settings are encoded — document contents never touch the URL.**
 - **Editor UX**: CodeMirror 6, resizable two-panel desktop layout, mobile input/output tabs,
   status bar (type, validity, lines, chars, bytes, processing time), light/dark/system themes,
   keyboard shortcuts + help dialog, drag-and-drop file upload, download, undo/redo, cancellation.
+- **Suggested fixes**: when JSON fails to parse, the tool names the repairs that would help —
+  trailing commas, single quotes, unquoted keys, comments, Python `True`/`False`/`None`, curly
+  quotes, BOM, unclosed brackets — with a count and an explanation per fix and a preview of the
+  result. Nothing is applied until you accept it. The rewrite is string-aware, so a comma or `//`
+  inside one of your string values is never touched.
 - **Safety**: no silent repair, no silent lossy conversion — every risky transformation is warned
   about before it replaces your output.
 
@@ -70,8 +89,12 @@ formatting, validation, conversion, searching, or tree visualization.
   browser (main thread or a Web Worker — both on your device).
 - **Never**: transmit, log, or store document contents; include them in analytics; persist them by
   default.
-- **Only** UI preferences (theme, indentation, etc.) are stored, in `localStorage`, never leaving
-  your device.
+- **Only** UI preferences (theme, indentation, saved formatting presets, comparison options) are
+  stored, in `localStorage`, never leaving your device.
+- The URL query string carries **formatting options only** (`indent`, `eol`, `nl`, `sort`, `yaml`).
+  Document contents are never encoded into a link, so pasting a settings link into a chat cannot
+  leak data. This is enforced by `optionsToParams` in `src/lib/presets.ts`, which has a fixed,
+  tested set of keys.
 - Uploaded files are treated as **untrusted**: read as text only, restricted to expected
   extensions, and capped at a configurable size limit.
 - A **Content Security Policy** (see `next.config.mjs`) restricts `connect-src` to `'self'`, so the
@@ -217,6 +240,11 @@ The architecture makes new tools cheap to add:
    and, if it's a new operation kind, in `Workbench`'s `buildOperation`.
 5. **Route**: create `src/app/<slug>/page.tsx`:
 
+   Tools whose editor is the generic `Workbench` use `ToolPage`. A tool with a bespoke editor (the
+   anonymizer and diff tools) composes `ToolPageShell` directly instead, passing its own editor as
+   a child — the shell renders the heading, instructions, example, FAQ, structured data, and
+   sidebar identically for every tool.
+
    ```tsx
    import type { Metadata } from 'next';
    import { ToolPage } from '@/components/workbench/ToolPage';
@@ -272,6 +300,15 @@ without a separate backend and without requiring credentials to build or run tod
   and offline — provide the full schema locally.
 - **Tree view scale.** Very large documents render with collapsed branches for performance; full
   windowed virtualization is a future enhancement. Target smooth operation up to ~10 MB.
+- **Generated patches are correct, not minimal.** The JSON Patch emitted by the diff tools always
+  transforms the left document into the right one (this is covered by tests that apply the patch and
+  compare the result), but array edits are expressed positionally rather than as `move` operations,
+  so a reordered array produces a longer patch than a hand-written one would. A wrong-but-short
+  patch would be far worse than a long correct one. Merge Patch carries the format's inherent
+  limits — arrays are replaced wholesale and `null` means "delete" — and the tool says so when your
+  documents hit either case.
+- **Diff ignores comments.** Comments are not data, so two YAML files differing only in comments
+  compare as identical. Anchors and aliases are resolved before comparison, for the same reason.
 - **PWA icons.** A scalable SVG icon ships in `public/icons/icon.svg`. Raster PNG icons
   (`icon-192.png`, `icon-512.png`) are documented placeholders you can drop into `public/icons/` for
   broader install-prompt support.

@@ -31,7 +31,7 @@ export const TOOL_CONTENT: Record<ToolMode, ToolContent> = {
       },
       {
         q: 'Can it fix invalid JSON automatically?',
-        a: 'No. The formatter never silently repairs input. It reports the exact location of the first error so you can fix it deliberately.',
+        a: 'It never repairs anything silently. When a document fails to parse, the tool reports the exact error location and — if the problem is one it recognises, like a trailing comma, single quotes, unquoted keys, comments, or curly quotes from a word processor — offers those fixes as suggestions. Each one says what it changes and how many times, and you can preview the result before applying it. Nothing changes until you click Apply.',
       },
       {
         q: 'What indentation options are supported?',
@@ -56,6 +56,10 @@ export const TOOL_CONTENT: Record<ToolMode, ToolContent> = {
       {
         q: 'What kinds of problems does the validator detect?',
         a: 'Syntax errors (with line and column), duplicate object keys, unterminated strings, invalid escapes, trailing content, and numbers that may lose precision.',
+      },
+      {
+        q: 'Can it suggest a fix?',
+        a: 'Yes, for the problems it recognises: trailing commas, single-quoted strings, unquoted keys, // and /* */ comments, Python True/False/None, curly “smart” quotes, a byte-order mark, and unclosed brackets. Each suggestion states what it changes and how many occurrences it affects, and you can preview the repaired document first. Nothing is applied until you accept it, and the repair is string-aware — a comma or // inside one of your string values is never touched.',
       },
       {
         q: 'Does it detect duplicate keys?',
@@ -177,6 +181,44 @@ export const TOOL_CONTENT: Record<ToolMode, ToolContent> = {
       },
     ],
   },
+  'json-diff': {
+    instructions: [
+      'Put the original JSON in the left editor and the changed JSON in the right editor — paste, upload, or drag a file onto either side.',
+      'The comparison runs automatically. Added, removed, and changed keys are listed with the value from each side.',
+      'If your arrays hold objects with a stable identifier, switch Arrays to “By identity key” and enter the key (usually id) so an insertion or reorder is not reported as a change to every later item.',
+      'Switch to the Patch view to copy the difference as an RFC 6902 JSON Patch or an RFC 7386 Merge Patch.',
+    ],
+    example: {
+      title: 'Spotting a config change',
+      input:
+        'Left:  { "replicas": 3, "region": "eu-west-1" }\nRight: { "replicas": 5, "owner": "payments" }',
+      output:
+        '~ /replicas   3 → 5\n− /region     "eu-west-1" removed\n+ /owner      "payments" added',
+      note: 'The JSON Patch for this comparison is: [{"op":"replace","path":"/replicas","value":5},{"op":"remove","path":"/region"},{"op":"add","path":"/owner","value":"payments"}]',
+    },
+    faq: [
+      {
+        q: 'How is this different from a text diff?',
+        a: 'A text diff compares lines, so reindenting a file or reordering keys shows up as a wall of changes. This tool parses both documents and compares the data, so formatting, whitespace, and key order are never reported as differences — only real value changes are.',
+      },
+      {
+        q: 'Why does inserting one array item mark everything after it as changed?',
+        a: 'By default arrays are compared position by position, so inserting at the front shifts every later item. Switch Arrays to “By identity key” and give the key that identifies each item (such as id) — items are then matched by identity, and the insertion is reported as a single addition.',
+      },
+      {
+        q: 'What is a JSON Patch and why would I want one?',
+        a: 'JSON Patch (RFC 6902) is a standard list of add, remove, and replace operations that transforms one document into another. It is useful for API PATCH requests, audit trails, and applying the same change programmatically. The generated patch is always correct, though not always the shortest possible.',
+      },
+      {
+        q: 'When should I use Merge Patch instead?',
+        a: 'JSON Merge Patch (RFC 7386) is easier to read but lossy: it replaces arrays wholesale, and a null means “delete this key”, so it cannot express a value that should genuinely become null. The tool warns you when your documents hit either limitation.',
+      },
+      {
+        q: 'Are the two documents uploaded anywhere?',
+        a: 'No. Both are parsed and compared entirely in your browser, in a Web Worker for large inputs. Neither document, nor the resulting patch, is ever transmitted.',
+      },
+    ],
+  },
   'yaml-formatter': {
     instructions: [
       'Paste or upload YAML (.yaml or .yml).',
@@ -289,6 +331,42 @@ export const TOOL_CONTENT: Record<ToolMode, ToolContent> = {
       {
         q: 'What replacement styles are available?',
         a: 'Realistic fake data (key-aware), Redact (mask with ***), and Type placeholder. Secret-like keys are always fully redacted.',
+      },
+    ],
+  },
+  'yaml-diff': {
+    instructions: [
+      'Put the baseline YAML in the left editor and the version you want to check in the right editor.',
+      'The comparison runs automatically and reports added, removed, and changed keys with the value from each side.',
+      'For lists of objects — containers, environment variables, ingress rules — set Arrays to “By identity key” and use the field that names each entry (often name or id).',
+      'Use the Patch view to export the difference as a JSON Patch, or copy the JSON Pointer path of any changed key.',
+    ],
+    example: {
+      title: 'Comparing two environment configs',
+      input: 'Left:  replicas: 3\n       debug: true\nRight: replicas: 5',
+      output: '~ /replicas   3 → 5\n− /debug      true removed',
+      note: 'Indentation style, quoting, and key order differ freely between the two files without being reported as changes.',
+    },
+    faq: [
+      {
+        q: 'Does it compare YAML comments?',
+        a: 'No. Comments are not data, so they are not part of the comparison — two files that differ only in comments are reported as identical. Use the YAML formatter if you need comment-preserving formatting.',
+      },
+      {
+        q: 'Can it compare Kubernetes manifests?',
+        a: 'Yes, and the identity-key option is designed for exactly that: set the key to name so containers, env entries, and ports are matched by name rather than by position.',
+      },
+      {
+        q: 'What happens with anchors and aliases?',
+        a: 'They are resolved to the values they refer to before comparison, because that is what the document actually means. Two files that express the same data — one with an anchor, one written out in full — are reported as identical.',
+      },
+      {
+        q: 'How are multiple YAML documents in one file handled?',
+        a: 'Documents separated by --- are combined into a list in the order they appear, and that list is compared. Adding or removing a document therefore shows up as an added or removed list entry.',
+      },
+      {
+        q: 'Is anything sent to a server?',
+        a: 'No. Both files are parsed and compared in your browser only. Neither the files nor the resulting patch leave your device.',
       },
     ],
   },

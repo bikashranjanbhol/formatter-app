@@ -80,6 +80,82 @@ notes: |
   plus a block scalar. Converting to JSON expands the aliases.
 `;
 
+/**
+ * Diff samples. Deliberately exercise every difference class the viewer can
+ * show: a changed scalar, an added key, a removed key, a nested change, and an
+ * array whose items moved as well as changed.
+ */
+export const SAMPLE_DIFF_LEFT = `{
+  "service": "checkout-api",
+  "version": "2.3.1",
+  "replicas": 3,
+  "region": "eu-west-1",
+  "limits": { "memoryMb": 512, "cpu": "500m" },
+  "features": ["cart", "payments", "receipts"],
+  "endpoints": [
+    { "id": "health", "path": "/healthz", "public": true },
+    { "id": "charge", "path": "/v1/charge", "public": false }
+  ]
+}`;
+
+export const SAMPLE_DIFF_RIGHT = `{
+  "service": "checkout-api",
+  "version": "2.4.0",
+  "replicas": 5,
+  "limits": { "memoryMb": 1024, "cpu": "500m" },
+  "features": ["cart", "payments", "receipts", "refunds"],
+  "endpoints": [
+    { "id": "charge", "path": "/v1/charge", "public": false },
+    { "id": "health", "path": "/healthz", "public": true },
+    { "id": "refund", "path": "/v1/refund", "public": false }
+  ],
+  "owner": "payments-team"
+}`;
+
+export const SAMPLE_DIFF_LEFT_YAML = `service: checkout-api
+version: 2.3.1
+replicas: 3
+region: eu-west-1
+limits:
+  memoryMb: 512
+  cpu: 500m
+features:
+  - cart
+  - payments
+  - receipts
+endpoints:
+  - id: health
+    path: /healthz
+    public: true
+  - id: charge
+    path: /v1/charge
+    public: false
+`;
+
+export const SAMPLE_DIFF_RIGHT_YAML = `service: checkout-api
+version: 2.4.0
+replicas: 5
+limits:
+  memoryMb: 1024
+  cpu: 500m
+features:
+  - cart
+  - payments
+  - receipts
+  - refunds
+endpoints:
+  - id: charge
+    path: /v1/charge
+    public: false
+  - id: health
+    path: /healthz
+    public: true
+  - id: refund
+    path: /v1/refund
+    public: false
+owner: payments-team
+`;
+
 export const SAMPLE_SCHEMA = `{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Product",

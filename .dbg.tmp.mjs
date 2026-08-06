@@ -1,0 +1,16 @@
+import { chromium } from '@playwright/test';
+const dir = '/tmp/claude-0/-home-user-formatter-app/48357e1d-c64c-5892-a89e-52262eeddc1e/scratchpad';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const p = await b.newPage({ viewport: { width: 1400, height: 1000 } });
+p.on('console', m => console.log('CONSOLE:', m.type(), m.text()));
+p.on('pageerror', e => console.log('PAGEERROR:', e.message));
+await p.goto('http://localhost:3100/json-validator');
+await p.locator('.cm-content').first().waitFor();
+await p.locator('.cm-content').click();
+await p.keyboard.type("{ name: 'Ada', }");
+await p.waitForTimeout(2500);
+console.log('EDITOR TEXT:', JSON.stringify(await p.locator('.cm-content').innerText()));
+console.log('PANEL COUNT:', await p.getByLabel('Suggested fixes').count());
+console.log('ERRORS:', await p.locator('[aria-label="Errors"]').innerText().catch(()=>'(none)'));
+await p.screenshot({ path: `${dir}/repair-debug.png` });
+await b.close();

@@ -1,37 +1,9 @@
 import type { TreeNode } from './types';
 import { escapePointer } from './json/parse';
-
-const MAX_PREVIEW = 60;
+import { previewContainer, previewScalar, valueType } from './value';
 
 function scalarType(value: unknown): TreeNode['type'] {
-  if (value === null) return 'null';
-  switch (typeof value) {
-    case 'string':
-      return 'string';
-    case 'number':
-      return 'number';
-    case 'boolean':
-      return 'boolean';
-    default:
-      return 'null';
-  }
-}
-
-function previewScalar(value: unknown): string {
-  if (value === null) return 'null';
-  if (typeof value === 'string') {
-    const text = value.length > MAX_PREVIEW ? `${value.slice(0, MAX_PREVIEW)}…` : value;
-    return JSON.stringify(text);
-  }
-  return String(value);
-}
-
-function previewContainer(value: unknown): string {
-  if (Array.isArray(value)) {
-    return value.length === 1 ? '1 item' : `${value.length} items`;
-  }
-  const count = Object.keys(value as Record<string, unknown>).length;
-  return count === 1 ? '1 key' : `${count} keys`;
+  return valueType(value);
 }
 
 /**

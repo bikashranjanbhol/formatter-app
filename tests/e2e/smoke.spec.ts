@@ -88,6 +88,46 @@ test.describe('JSON & YAML Workbench smoke tests', () => {
     await expect(page.getByText('● Valid')).toBeVisible();
   });
 
+  test('suggested fixes repair invalid JSON only when accepted', async ({ page }) => {
+    await page.goto('/json-validator');
+    const editor = page.locator('.cm-content');
+    await expect(editor).toBeVisible();
+    await editor.click();
+    await page.keyboard.type("{ name: 'Ada', }");
+
+    const panel = page.getByLabel('Suggested fixes');
+    await expect(panel).toBeVisible();
+    await expect(panel).toContainText('Remove trailing commas');
+    await expect(panel).toContainText('Quote unquoted keys');
+    await expect(panel).toContainText('Applying these makes the document valid');
+
+    // Nothing is changed until the user accepts.
+    await expect(editor).toContainText("name: 'Ada'");
+
+    await panel.getByRole('button', { name: /Apply fixes/ }).click();
+    await expect(editor).toContainText('"name": "Ada"');
+    await expect(page.getByText('● Valid')).toBeVisible();
+    await expect(panel).toBeHidden();
+  });
+
+  test('suggested fixes leave string contents alone', async ({ page }) => {
+    await page.goto('/json-validator');
+    const editor = page.locator('.cm-content');
+    await expect(editor).toBeVisible();
+    await editor.click();
+    // The URL contains // and the note contains a comma — a naive repair would
+    // destroy both.
+    await page.keyboard.type('{ "url": "https://a.dev", "note": "x, y,", }');
+
+    await page
+      .getByLabel('Suggested fixes')
+      .getByRole('button', { name: /Apply fix/ })
+      .click();
+    await expect(editor).toContainText('https://a.dev');
+    await expect(editor).toContainText('x, y,');
+    await expect(page.getByText('● Valid')).toBeVisible();
+  });
+
   test('JSON diff compares two documents structurally', async ({ page }) => {
     await page.goto('/json-diff');
     await expect(page.locator('.cm-content').first()).toBeVisible();

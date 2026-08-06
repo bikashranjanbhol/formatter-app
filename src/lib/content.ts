@@ -31,7 +31,7 @@ export const TOOL_CONTENT: Record<ToolMode, ToolContent> = {
       },
       {
         q: 'Can it fix invalid JSON automatically?',
-        a: 'No. The formatter never silently repairs input. It reports the exact location of the first error so you can fix it deliberately.',
+        a: 'It never repairs anything silently. When a document fails to parse, the tool reports the exact error location and — if the problem is one it recognises, like a trailing comma, single quotes, unquoted keys, comments, or curly quotes from a word processor — offers those fixes as suggestions. Each one says what it changes and how many times, and you can preview the result before applying it. Nothing changes until you click Apply.',
       },
       {
         q: 'What indentation options are supported?',
@@ -56,6 +56,10 @@ export const TOOL_CONTENT: Record<ToolMode, ToolContent> = {
       {
         q: 'What kinds of problems does the validator detect?',
         a: 'Syntax errors (with line and column), duplicate object keys, unterminated strings, invalid escapes, trailing content, and numbers that may lose precision.',
+      },
+      {
+        q: 'Can it suggest a fix?',
+        a: 'Yes, for the problems it recognises: trailing commas, single-quoted strings, unquoted keys, // and /* */ comments, Python True/False/None, curly “smart” quotes, a byte-order mark, and unclosed brackets. Each suggestion states what it changes and how many occurrences it affects, and you can preview the repaired document first. Nothing is applied until you accept it, and the repair is string-aware — a comma or // inside one of your string values is never touched.',
       },
       {
         q: 'Does it detect duplicate keys?',

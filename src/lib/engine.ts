@@ -8,6 +8,7 @@ import { yamlToValue } from './yaml';
 import { buildTree, countNodes } from './tree';
 import type { TreeNode } from './types';
 import { diffValues, type DiffOptions, type DiffResult } from './diff';
+import { repairJson, type RepairResult } from './json/repair';
 
 /**
  * The set of operations the engine can perform. Kept as a discriminated union
@@ -30,7 +31,8 @@ export type EngineOperation =
   | { kind: 'anonymize-json'; source: string; options: AnonymizeOptions }
   | { kind: 'anonymize-yaml'; source: string; options: AnonymizeOptions }
   | { kind: 'diff-json'; left: string; right: string; options: DiffOptions }
-  | { kind: 'diff-yaml'; left: string; right: string; options: DiffOptions };
+  | { kind: 'diff-yaml'; left: string; right: string; options: DiffOptions }
+  | { kind: 'repair-json'; source: string };
 
 export interface TreeResult {
   ok: boolean;
@@ -49,7 +51,7 @@ export interface SchemaResult extends EngineResult {
   >;
 }
 
-export type EngineResponse = EngineResult | TreeResult | SchemaResult | DiffResult;
+export type EngineResponse = EngineResult | TreeResult | SchemaResult | DiffResult | RepairResult;
 
 /** Pure dispatcher. No DOM or React usage, safe to run in a worker. */
 export function runOperation(op: EngineOperation): EngineResponse {
@@ -80,6 +82,8 @@ export function runOperation(op: EngineOperation): EngineResponse {
       return runDiff(op.left, op.right, 'json', op.options);
     case 'diff-yaml':
       return runDiff(op.left, op.right, 'yaml', op.options);
+    case 'repair-json':
+      return repairJson(op.source);
     default: {
       const _exhaustive: never = op;
       return {

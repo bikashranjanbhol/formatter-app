@@ -7,6 +7,7 @@ import { StatusBar, type Validity } from '../editor/StatusBar';
 import { Toolbar } from '../editor/Toolbar';
 import { HelpDialog } from '../editor/HelpDialog';
 import { ErrorList } from '../validation/ErrorList';
+import { RepairPanel } from '../validation/RepairPanel';
 import { TreeView } from '../tree/TreeView';
 import { PrivacyIndicator } from '../privacy/PrivacyIndicator';
 import { AdSlot } from '../monetization/AdSlot';
@@ -34,6 +35,7 @@ import {
 import type { EngineOperation, EngineResponse, TreeResult, SchemaResult } from '@/lib/engine';
 import type { EngineResult } from '@/lib/types';
 import { run, type RunHandle } from '@/lib/runner';
+import type { RepairResult } from '@/lib/json/repair';
 import { computeStats } from '@/lib/text';
 import { copyToClipboard } from '@/lib/clipboard';
 import { readTextFile, downloadText } from '@/lib/files/upload';
@@ -54,6 +56,7 @@ export function Workbench({ mode }: { mode: ToolMode }) {
   const [errors, setErrors] = useState<EngineError[]>([]);
   const [warnings, setWarnings] = useState<EngineError[]>([]);
   const [notes, setNotes] = useState<string[]>([]);
+  const [repair, setRepair] = useState<RepairResult | null>(null);
   const [validity, setValidity] = useState<Validity>('unknown');
   const [processingMs, setProcessingMs] = useState<number | null>(null);
   const [offloaded, setOffloaded] = useState(false);
@@ -138,6 +141,7 @@ export function Workbench({ mode }: { mode: ToolMode }) {
     setErrors([]);
     setWarnings([]);
     setNotes([]);
+    setRepair(null);
   }, []);
 
   const runPrimary = useCallback(
@@ -159,6 +163,20 @@ export function Workbench({ mode }: { mode: ToolMode }) {
         const result: EngineResponse = await handle.promise;
         applyResult(result);
         setProcessingMs(performance.now() - started);
+        // When a JSON document failed to parse, work out whether a known,
+        // explainable fix would make it valid — and offer it rather than
+        // applying it. Runs through the runner so large inputs stay off the
+        // main thread.
+        if (!result.ok && config.inputLanguage === 'json') {
+          try {
+            const suggested = (await run({ kind: 'repair-json', source }).promise) as RepairResult;
+            setRepair(suggested.suggestions.length > 0 ? suggested : null);
+          } catch {
+            setRepair(null);
+          }
+        } else {
+          setRepair(null);
+        }
       } catch (err) {
         if (err instanceof DOMException && err.name === 'AbortError') {
           announce('Operation cancelled.');
@@ -695,7 +713,17 @@ export function Workbench({ mode }: { mode: ToolMode }) {
       )}
 
       {/* Results */}
-      <div className="mt-4">
+      <div className="mt-4 space-y-2">
+        {repair && (
+          <RepairPanel
+            result={repair}
+            onApply={(repaired) => {
+              commitInput(repaired);
+              setRepair(null);
+              announce('Fixes applied to the input.');
+            }}
+          />
+        )}
         <ErrorList
           errors={errors}
           warnings={warnings}

@@ -63,6 +63,11 @@ Built with Next.js (App Router), React, TypeScript (strict), Tailwind CSS, CodeM
 - **Editor UX**: CodeMirror 6, resizable two-panel desktop layout, mobile input/output tabs,
   status bar (type, validity, lines, chars, bytes, processing time), light/dark/system themes,
   keyboard shortcuts + help dialog, drag-and-drop file upload, download, undo/redo, cancellation.
+- **Suggested fixes**: when JSON fails to parse, the tool names the repairs that would help —
+  trailing commas, single quotes, unquoted keys, comments, Python `True`/`False`/`None`, curly
+  quotes, BOM, unclosed brackets — with a count and an explanation per fix and a preview of the
+  result. Nothing is applied until you accept it. The rewrite is string-aware, so a comma or `//`
+  inside one of your string values is never touched.
 - **Safety**: no silent repair, no silent lossy conversion — every risky transformation is warned
   about before it replaces your output.
 
